@@ -525,21 +525,16 @@
       <div class="content" style="max-width:700px">
 
         <div class="form-section">
-          <div class="form-section-title">Google Sheets API</div>
+          <div class="form-section-title">Google Apps Script (intermediário)</div>
           <div class="config-grid">
             <div class="field field-full">
-              <label>ID da planilha</label>
-              <input type="text" id="cfg-sheet-id" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms">
-              <div class="hint">Encontre na URL: docs.google.com/spreadsheets/d/<strong>ID</strong>/edit</div>
+              <label>URL do Apps Script</label>
+              <input type="text" id="cfg-script-url" placeholder="https://script.google.com/macros/s/.../exec">
+              <div class="hint">Cole aqui a URL gerada ao implantar o Apps Script como "App da Web".</div>
             </div>
             <div class="field field-full">
               <label>Nome da aba principal</label>
               <input type="text" id="cfg-sheet-name" value="S.I INV." placeholder="S.I INV.">
-            </div>
-            <div class="field field-full">
-              <label>Chave JSON da Service Account</label>
-              <textarea id="cfg-sa-json" placeholder='Cole aqui o conteúdo completo do arquivo JSON baixado do Google Cloud Console...'></textarea>
-              <div class="hint">⚠️ Não compartilhe esta chave. Ela fica armazenada apenas no navegador (localStorage).</div>
             </div>
           </div>
         </div>
@@ -666,8 +661,7 @@ const STATUS_LABELS = {
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 window.onload = () => {
   loadConfig();
-  // Carregar dados mockados se não houver config
-  if (!CONFIG.sheetId) {
+  if (!CONFIG.scriptUrl) {
     DATA = getMockData();
     renderStats();
     renderTable();
@@ -678,9 +672,8 @@ window.onload = () => {
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 function saveConfig() {
   CONFIG = {
-    sheetId: document.getElementById('cfg-sheet-id').value.trim(),
+    scriptUrl: document.getElementById('cfg-script-url').value.trim(),
     sheetName: document.getElementById('cfg-sheet-name').value.trim() || 'S.I INV.',
-    saJson: document.getElementById('cfg-sa-json').value.trim(),
     claudeKey: document.getElementById('cfg-claude-key').value.trim()
   };
   localStorage.setItem('seripa_config', JSON.stringify(CONFIG));
@@ -692,9 +685,8 @@ function loadConfig() {
   const raw = localStorage.getItem('seripa_config');
   if (raw) {
     CONFIG = JSON.parse(raw);
-    document.getElementById('cfg-sheet-id').value = CONFIG.sheetId || '';
+    document.getElementById('cfg-script-url').value = CONFIG.scriptUrl || '';
     document.getElementById('cfg-sheet-name').value = CONFIG.sheetName || 'S.I INV.';
-    document.getElementById('cfg-sa-json').value = CONFIG.saJson || '';
     document.getElementById('cfg-claude-key').value = CONFIG.claudeKey || '';
   }
   updateStatusBadge();
@@ -703,8 +695,8 @@ function loadConfig() {
 function updateStatusBadge() {
   const el = document.getElementById('conn-status');
   const badge = document.getElementById('sync-badge');
-  if (CONFIG.sheetId && CONFIG.saJson) {
-    el.textContent = '✓ Planilha configurada';
+  if (CONFIG.scriptUrl) {
+    el.textContent = '✓ Apps Script configurado';
     el.style.color = 'var(--green)';
     badge.className = 'topbar-badge badge-ok';
     badge.textContent = 'Conectado';
@@ -716,84 +708,43 @@ function updateStatusBadge() {
   }
 }
 
-// ─── GOOGLE AUTH ──────────────────────────────────────────────────────────────
-async function getAccessToken() {
-  if (!CONFIG.saJson) throw new Error('Service Account JSON não configurado');
-  let sa;
-  try { sa = JSON.parse(CONFIG.saJson); } catch { throw new Error('JSON inválido'); }
-
-  const now = Math.floor(Date.now() / 1000);
-  const header = btoa(JSON.stringify({alg:'RS256',typ:'JWT'})).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
-  const claim = btoa(JSON.stringify({
-    iss: sa.client_email,
-    scope: 'https://www.googleapis.com/auth/spreadsheets',
-    aud: 'https://oauth2.googleapis.com/token',
-    exp: now + 3600,
-    iat: now
-  })).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
-
-  // Assinar com chave privada via Web Crypto
-  const pemContent = sa.private_key.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\n/g,'');
-  const binaryKey = Uint8Array.from(atob(pemContent), c => c.charCodeAt(0));
-  const cryptoKey = await crypto.subtle.importKey('pkcs8', binaryKey.buffer, {name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'}, false, ['sign']);
-  const sig = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', cryptoKey, new TextEncoder().encode(`${header}.${claim}`));
-  const sigB64 = btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
-  const jwt = `${header}.${claim}.${sigB64}`;
-
-  const res = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: {'Content-Type':'application/x-www-form-urlencoded'},
-    body: `grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${jwt}`
-  });
+// ─── APPS SCRIPT API ──────────────────────────────────────────────────────────
+async function scriptGet() {
+  if (!CONFIG.scriptUrl) throw new Error('URL do Apps Script não configurada');
+  const url = `${CONFIG.scriptUrl}?action=read`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Erro HTTP ' + res.status);
   const data = await res.json();
-  if (!data.access_token) throw new Error(data.error_description || 'Falha na autenticação');
-  return data.access_token;
-}
-
-// ─── SHEETS API ───────────────────────────────────────────────────────────────
-async function sheetsGet(range) {
-  const token = await getAccessToken();
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.sheetId}/values/${encodeURIComponent(range)}`;
-  const res = await fetch(url, {headers:{Authorization:`Bearer ${token}`}});
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
+  if (data.error) throw new Error(data.error);
   return data.values || [];
 }
 
-async function sheetsAppend(values) {
-  const token = await getAccessToken();
-  const range = encodeURIComponent(`${CONFIG.sheetName}!A:S`);
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.sheetId}/values/${range}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
-  const res = await fetch(url, {
+async function scriptAppend(row) {
+  if (!CONFIG.scriptUrl) throw new Error('URL do Apps Script não configurada');
+  const res = await fetch(CONFIG.scriptUrl + '?action=append', {
     method: 'POST',
-    headers: {Authorization:`Bearer ${token}`, 'Content-Type':'application/json'},
-    body: JSON.stringify({values})
+    body: JSON.stringify({row})
   });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
-  return data;
+  if (!res.ok) throw new Error('Erro HTTP ' + res.status);
+  return await res.json();
 }
 
-async function sheetsUpdate(rowNum, values) {
-  const token = await getAccessToken();
-  const range = encodeURIComponent(`${CONFIG.sheetName}!A${rowNum}:S${rowNum}`);
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.sheetId}/values/${range}?valueInputOption=USER_ENTERED`;
-  const res = await fetch(url, {
-    method: 'PUT',
-    headers: {Authorization:`Bearer ${token}`, 'Content-Type':'application/json'},
-    body: JSON.stringify({values: [values]})
+async function scriptUpdate(rowNum, values) {
+  if (!CONFIG.scriptUrl) throw new Error('URL do Apps Script não configurada');
+  const res = await fetch(CONFIG.scriptUrl + '?action=update', {
+    method: 'POST',
+    body: JSON.stringify({row: rowNum, values})
   });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
-  return data;
+  if (!res.ok) throw new Error('Erro HTTP ' + res.status);
+  return await res.json();
 }
 
 // ─── LOAD DATA ────────────────────────────────────────────────────────────────
 async function loadData() {
-  if (!CONFIG.sheetId) { toast('Configure o ID da planilha primeiro', 'error'); showPanel('config'); return; }
+  if (!CONFIG.scriptUrl) { toast('Configure a URL do Apps Script primeiro', 'error'); showPanel('config'); return; }
   toast('Sincronizando...', 'info');
   try {
-    const rows = await sheetsGet(`${CONFIG.sheetName}!A:S`);
+    const rows = await scriptGet();
     DATA = [];
     // Pular linhas de cabeçalho (primeiras 4 linhas da planilha original)
     let dataStart = 0;
@@ -859,8 +810,7 @@ function inferStatus(acoes) {
 async function testConnection() {
   try {
     toast('Testando conexão...', 'info');
-    await getAccessToken();
-    const rows = await sheetsGet(`${CONFIG.sheetName}!A1:B3`);
+    const rows = await scriptGet();
     toast(`Conexão OK! ${rows.length} linhas lidas.`, 'success');
     updateStatusBadge();
   } catch(e) {
@@ -960,14 +910,14 @@ async function saveUpdate() {
   closeModal();
   renderTable(); renderPainelTable(); renderStats();
 
-  if (CONFIG.sheetId && CONFIG.saJson) {
+  if (CONFIG.scriptUrl) {
     try {
       const rowValues = [d.celula,`${d.matricula} (${d.ano})`,d.resp,d.inicio,d.prazo,d.prior,d.checkin,d.feito,d.acoes,d.feedback,d.tipo,d.dataOcorr,d.local,d.modelo,d.revisor,d.dataRevisao,d.aprovador,d.status,d.rai];
-      await sheetsUpdate(rowNum, rowValues);
+      await scriptUpdate(rowNum, rowValues);
       toast('Planilha atualizada!', 'success');
     } catch(e) { toast('Salvo localmente. Erro ao sync: ' + e.message, 'error'); }
   } else {
-    toast('Atualizado localmente (configure a planilha para sync)', 'info');
+    toast('Atualizado localmente (configure o Apps Script)', 'info');
   }
 }
 
@@ -1007,10 +957,10 @@ async function saveNew(e) {
   DATA.push(newRow);
   renderStats(); renderTable(); renderPainelTable();
 
-  if (CONFIG.sheetId && CONFIG.saJson) {
+  if (CONFIG.scriptUrl) {
     try {
-      const values = [[newRow.celula,`${mat} (${ano})`,newRow.resp,newRow.inicio,newRow.prazo,newRow.prior,'FALSE','FALSE',newRow.acoes,'',newRow.tipo,newRow.dataOcorr,newRow.local,newRow.modelo,'','','',newRow.status,newRow.rai]];
-      await sheetsAppend(values);
+      const row = [newRow.celula,`${mat} (${ano})`,newRow.resp,newRow.inicio,newRow.prazo,newRow.prior,'FALSE','FALSE',newRow.acoes,'',newRow.tipo,newRow.dataOcorr,newRow.local,newRow.modelo,'','','',newRow.status,newRow.rai];
+      await scriptAppend(row);
       toast(`${mat} adicionada à planilha!`, 'success');
     } catch(e) {
       toast('Adicionado localmente. Erro sync: ' + e.message, 'error');
