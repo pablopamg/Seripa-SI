@@ -564,37 +564,45 @@ async function loadData(){
   toast('Sincronizando...','info');
   try{
     const rows=await scriptGet();DATA=[];
+    const IGNORAR=['MATRICULA','CELULA','RESP','SECAO','BRIEFING','SERIPA','COMANDO','SECCAO','INVESTIGACAO'];
     for(let i=0;i<rows.length;i++){
-      const r=rows[i];
-      const mat=g(r,COL.mat);
-      if(!mat||mat==='MATRÍCULA'||!mat.match(/^[A-Z]{2}[-A-Z0-9]/i))continue;
-      const am=mat.match(/\((\d{4})\)/);
-      DATA.push({
-        row:i+1,
-        celula:g(r,COL.cel)||'SI',
-        matricula:mat.replace(/\s*\(\d{4}\)\s*/,'').trim(),
-        ano:am?am[1]:g(r,COL.ano),
-        tipo:g(r,COL.tipo),
-        dataOco:fmtDate(r[COL.dataOco]),
-        local:g(r,COL.local),
-        uf:g(r,COL.uf),
-        modelo:g(r,COL.modelo),
-        fase:g(r,COL.fase),
-        resp:g(r,COL.resp),
-        inicio:fmtDate(r[COL.inicio]),
-        prazo:fmtDate(r[COL.prazo]),
-        prior:g(r,COL.prior),
-        status:g(r,COL.status)||inferSt(g(r,COL.acoes),g(r,COL.feedback)),
-        pend:g(r,COL.pend),
-        acoes:g(r,COL.acoes),
-        feedback:g(r,COL.feedback),
-        revisoes:g(r,COL.revisoes),
-        aprovador:g(r,COL.aprovador),
-        rai:g(r,COL.rai),
-        cat:g(r,COL.cat),
-      });
+      try{
+        const r=rows[i];
+        const mat=(r[COL.mat]||'').toString().trim();
+        if(!mat||mat.length<3)continue;
+        const matUp=mat.toUpperCase().replace(/[^A-Z]/g,'');
+        if(IGNORAR.some(h=>matUp.includes(h)))continue;
+        const am=mat.match(/\((\d{4})\)/);
+        const stRaw=(r[COL.status]||'').toString().trim();
+        const stNum=stRaw.replace(/[^0-9\.]/g,'').substring(0,3);
+        const status=stNum||inferSt((r[COL.acoes]||'').toString(),(r[COL.feedback]||'').toString());
+        DATA.push({
+          row:i+1,
+          celula:(r[COL.cel]||'SI').toString().trim(),
+          matricula:mat.replace(/\s*\(\d{4}\)\s*/,'').trim(),
+          ano:am?am[1]:(r[COL.ano]||'').toString().trim(),
+          tipo:(r[COL.tipo]||'').toString().trim(),
+          dataOco:fmtDate(r[COL.dataOco]),
+          local:(r[COL.local]||'').toString().trim(),
+          uf:(r[COL.uf]||'').toString().trim(),
+          modelo:(r[COL.modelo]||'').toString().trim(),
+          fase:(r[COL.fase]||'').toString().trim(),
+          resp:(r[COL.resp]||'').toString().trim(),
+          inicio:fmtDate(r[COL.inicio]),
+          prazo:fmtDate(r[COL.prazo]),
+          prior:(r[COL.prior]||'').toString().trim(),
+          status:status,
+          pend:(r[COL.pend]||'—').toString().trim(),
+          acoes:(r[COL.acoes]||'').toString().trim(),
+          feedback:(r[COL.feedback]||'').toString().trim(),
+          revisoes:(r[COL.revisoes]||'').toString().trim(),
+          aprovador:(r[COL.aprovador]||'').toString().trim(),
+          rai:(r[COL.rai]||'').toString().trim(),
+          cat:(r[COL.cat]||'').toString().trim(),
+        });
+      }catch(lineErr){console.warn('Linha '+i+' ignorada:',lineErr.message);}
     }
-    renderAll();toast(`${DATA.length} ocorrências carregadas`,'success');
+    renderAll();toast(DATA.length+' ocorrências carregadas','success');
   }catch(e){toast('Erro: '+e.message,'error');DATA=getMock();renderAll();}
 }
 
