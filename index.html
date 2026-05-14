@@ -577,7 +577,20 @@ async function loadData(){
         if(mat.toUpperCase().includes('SEÇÃO')||mat.toUpperCase().includes('BRIEFING')||mat.toUpperCase().includes('SERIPA-VII'))continue;
         const am=mat.match(/\((\d{4})\)/);
         const stRaw=(r[COL.status]||'').toString().trim();
-        const stNum=stRaw.replace(/[^0-9\.]/g,'').substring(0,3);
+        // Extrai o número do status — suporta "2", "2 — Texto", texto puro
+        let stNum='';
+        const stMatch=stRaw.match(/^([0-9]+(?:\.[0-9]+)?)/);
+        if(stMatch) stNum=stMatch[1];
+        // Se não achou número, tenta mapear pelo texto
+        if(!stNum){
+          const stUp=stRaw.toUpperCase();
+          if(stUp.includes('MINUTA AUTENTICADA'))stNum='7';
+          else if(stUp.includes('UPLOAD')||stUp.includes('DÉDALO')||stUp.includes('DEDALO'))stNum='6';
+          else if(stUp.includes('APRECIAÇ')||stUp.includes('APRECIA'))stNum='5';
+          else if(stUp.includes('REUNIÃO')||stUp.includes('LIBERAÇ')||stUp.includes('FECHAMENTO'))stNum='4';
+          else if(stUp.includes('REVIS'))stNum='3';
+          else if(stUp.includes('CONCLU')||stUp.includes('RF EMITIDO'))stNum='7';
+        }
         const status=stNum||inferSt((r[COL.acoes]||'').toString(),(r[COL.feedback]||'').toString());
         DATA.push({
           row:i+1,
@@ -678,8 +691,9 @@ function buildTable(rows){
   let h=`<table><thead><tr><th>Matrícula</th><th>Ano</th><th>Tipo</th><th>Categoria</th><th>Responsável</th><th>Prior.</th><th>Status</th><th>Laudo</th><th>Revisão</th><th>Ações</th><th></th></tr></thead><tbody>`;
   for(const d of rows){
     const key=revKey(d),rc=countRev(key),st=d.status||'2';
-    const stL=STATUS_LABELS[st]||'Confecção da minuta';
-    const stCls=st==='3.5'?'pill pill-35':`pill pill-${st}`;
+    const stL=STATUS_LABELS[st]||STATUS_LABELS['2'];
+    const stNum=st.replace('.','');
+    const stCls=st==='3.5'?'pill pill-35':`pill pill-${stNum}`;
     const pr=d.prior?`<span class="prio prio-${d.prior}">${d.prior}</span>`:'—';
     const rv=(st==='3'||st==='3.5')?`<span style="font-size:11px;color:${st==='3.5'?'var(--green)':'var(--amber)'}">${rc}/${REVISORES.length}</span>`:'<span style="color:var(--text3)">—</span>';
     const ac=(d.acoes||'').length>35?d.acoes.substring(0,35)+'…':d.acoes;
