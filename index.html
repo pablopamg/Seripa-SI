@@ -304,8 +304,8 @@
             <option value="">Todos status</option>
             <option value="1">Aguardando laudo</option><option value="2">Confecção da minuta</option>
             <option value="3">Em revisão</option><option value="3.5">Revisada</option>
-            <option value="4">Aguard. reunião</option><option value="5">Upload Dédalo</option>
-            <option value="6">Apreciação chefe</option><option value="7">Concluído</option>
+            <option value="4">Aguard. reunião</option><option value="5">Apreciação chefe</option>
+            <option value="6">Upload Dédalo</option><option value="7">Minuta autenticada</option>
           </select>
           <select class="filter-select" id="f-ano" onchange="renderTable()">
             <option value="">Todos anos</option>
@@ -398,7 +398,7 @@
                 <select id="n-pend"><option value="—">—</option><option>DCTA</option><option>SAFRAN</option><option>AMR - DCTA</option><option>ANAC</option><option>DECEA</option><option>COMARA</option><option>Outra</option></select>
               </div>
               <div class="field"><label>Status inicial</label>
-                <select id="n-st"><option value="2">2 — Confecção da minuta</option><option value="1">1 — Aguardando laudo técnico</option></select>
+                <select id="n-st"><option value="2">2 — Confecção da minuta</option><option value="1">1 — Aguardando laudo técnico</option><option value="3">3 — Em revisão</option><option value="4">4 — Aguard. reunião de liberação</option><option value="5">5 — Apreciação do chefe</option><option value="6">6 — Upload no Dédalo</option><option value="7">7 — Minuta autenticada</option></select>
               </div>
               <div class="field field-full"><label>Ações / Observações</label><textarea id="n-acoes" placeholder="Estado atual da investigação..."></textarea></div>
               <div class="field field-full"><label>RAI / Link Dédalo</label><input type="text" id="n-rai" placeholder="RAI autenticado em DD/MM/AAAA ou URL do Dédalo"></div>
@@ -465,9 +465,9 @@
           <option value="2">2 — Confecção da minuta</option>
           <option value="3">3 — Em revisão (enviar para revisores)</option>
           <option value="4">4 — Aguardando reunião de liberação</option>
-          <option value="5">5 — Upload no Dédalo</option>
-          <option value="6">6 — Apreciação do chefe</option>
-          <option value="7">7 — Concluído / RF emitido</option>
+          <option value="5">5 — Apreciação do chefe</option>
+          <option value="6">6 — Upload no Dédalo</option>
+          <option value="7">7 — Minuta autenticada</option>
         </select>
       </div>
       <div class="field"><label>Aguardando laudo técnico</label>
@@ -508,8 +508,8 @@ const REVISOR_NOMES = {PBO:'Maj Pablo',CEO:'Cp C. Eduardo',RAV:'Cp Ávila',JON:'
 const STATUS_LABELS = {
   '1':'Aguardando laudo técnico','2':'Confecção da minuta',
   '3':'Em revisão','3.5':'Revisada — todos confirmaram',
-  '4':'Aguard. reunião de liberação','5':'Upload no Dédalo',
-  '6':'Apreciação do chefe','7':'Concluído / RF emitido'
+  '4':'Aguard. reunião de liberação','5':'Apreciação do chefe',
+  '6':'Upload no Dédalo','7':'Minuta autenticada'
 };
 // Mapeamento de colunas (índice 0 = col A)
 // B=1,C=2,D=3,E=4,F=5,G=6,H=7,I=8,J=9,K=10,L=11,M=12,N=13,O=14,P=15,Q=16,R=17,S=18,T=19,U=20,V=21
@@ -783,7 +783,7 @@ async function askAI(){
         system:`Você é o assistente da Seção de Investigação do SERIPA-VII (Sétimo Serviço Regional de Investigação e Prevenção de Acidentes Aeronáuticos). Responda em português, objetivo e com linguagem aeronáutica adequada.
 Investigadores: CP AVILA, MAJ PABLO, CP CARLOS EDUARDO, CP JAIRO.
 Revisores: PBO(Maj Pablo), CEO(Cp C.Eduardo), RAV(Cp Ávila), JON, MAT, EMI. Quórum: todos os 6 devem confirmar.
-Status: 1=Aguardando laudo técnico, 2=Confecção da minuta, 3=Em revisão (parcial), 3.5=Revisada (todos confirmaram), 4=Aguard.reunião liberação, 5=Upload Dédalo, 6=Apreciação chefe, 7=Concluído/RF emitido.
+Status: 1=Aguardando laudo técnico, 2=Confecção da minuta, 3=Em revisão (parcial), 3.5=Revisada (todos confirmaram), 4=Aguard.reunião liberação, 5=Apreciação do chefe, 6=Upload no Dédalo, 7=Minuta autenticada.
 Categorias SIPAER conforme MCA 3-6/2017: CFIT, LOC-I, LOC-G, SCF-PP, SCF-NP, FUEL, BIRD, WILD, LALT, CTOL, ARC, USOS, UIMC, RI, TURB, WSTRW, ICE, F-NI, F-POST, CABIN, EVAC, MAC, GCOL, RAMP, EXTL, ADRM, MED, OTHR.
 Data atual: ${new Date().toLocaleDateString('pt-BR')}.
 Briefing quinzenal: resuma o estado geral, destaque prioridades 1, ocorrências em atraso, minutas em revisão e próximas etapas por investigador.
