@@ -600,13 +600,13 @@ async function loadData(){
 
 function inferSt(a,fb){
   a=(a||'').toUpperCase();fb=(fb||'').toUpperCase();
-  if('CONCLU'in a||'RF EMITIDO'in a)return'7';
-  if('APRECIAÇÃO'in a||'APRECIA'in a)return'6';
-  if('UPLOAD'in a||'DÉDALO'in a||'DEDALO'in fb)return'5';
-  if('REUNIÃO DE LIBERAÇÃO'in a||'FECHAMENTO'in a)return'4';
-  if('REVISÃO'in a||'REVISADO'in fb||'REVISADA'in fb)return'3';
-  if('AGUARDANDO LAUDO'in a||'AGUARDANDO LAUDO'in fb)return'1';
-  if('AGUARDANDO'in a||'AGUARDANDO'in fb)return'1';
+  if(a.includes('CONCLU')||a.includes('RF EMITIDO'))return'7';
+  if(a.includes('APRECIAÇÃO')||a.includes('APRECIA'))return'6';
+  if(a.includes('UPLOAD')||a.includes('DÉDALO')||fb.includes('DEDALO'))return'5';
+  if(a.includes('REUNIÃO DE LIBERAÇÃO')||a.includes('FECHAMENTO'))return'4';
+  if(a.includes('REVISÃO')||fb.includes('REVISADO')||fb.includes('REVISADA'))return'3';
+  if(a.includes('AGUARDANDO LAUDO')||fb.includes('AGUARDANDO LAUDO'))return'1';
+  if(a.includes('AGUARDANDO')||fb.includes('AGUARDANDO'))return'1';
   return'2';
 }
 
