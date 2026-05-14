@@ -564,14 +564,17 @@ async function loadData(){
   toast('Sincronizando...','info');
   try{
     const rows=await scriptGet();DATA=[];
-    const IGNORAR=['MATRICULA','CELULA','RESP','SECAO','BRIEFING','SERIPA','COMANDO','SECCAO','INVESTIGACAO'];
     for(let i=0;i<rows.length;i++){
       try{
         const r=rows[i];
         const mat=(r[COL.mat]||'').toString().trim();
-        if(!mat||mat.length<3)continue;
-        const matUp=mat.toUpperCase().replace(/[^A-Z]/g,'');
-        if(IGNORAR.some(h=>matUp.includes(h)))continue;
+        // Ignora linhas vazias e cabeçalhos — cabeçalho tem "MATRÍCULA" na col C (índice 2)
+        if(!mat||mat.length<2)continue;
+        // Se a célula de responsável contém "RESP" ou "RESPONSÁVEL" é cabeçalho
+        const respVal=(r[COL.resp]||'').toString().toUpperCase().trim();
+        if(respVal==='RESP'||respVal==='RESPONSÁVEL'||respVal==='RESPONSIBLE')continue;
+        // Ignora linhas de título da planilha
+        if(mat.toUpperCase().includes('SEÇÃO')||mat.toUpperCase().includes('BRIEFING')||mat.toUpperCase().includes('SERIPA-VII'))continue;
         const am=mat.match(/\((\d{4})\)/);
         const stRaw=(r[COL.status]||'').toString().trim();
         const stNum=stRaw.replace(/[^0-9\.]/g,'').substring(0,3);
