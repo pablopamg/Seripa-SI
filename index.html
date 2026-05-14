@@ -6,213 +6,186 @@
 <title>SERIPA-VII · Gestão de Investigações</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
-
   :root {
-    --bg: #0d1117;
-    --bg2: #161b22;
-    --bg3: #1c2330;
-    --border: #30363d;
-    --border2: #21262d;
-    --text: #e6edf3;
-    --text2: #8b949e;
-    --text3: #484f58;
-    --accent: #388bfd;
-    --accent-dim: #1f3f7a;
-    --green: #3fb950;
-    --green-dim: #1a3a22;
-    --amber: #d29922;
-    --amber-dim: #3d2c00;
-    --red: #f85149;
-    --red-dim: #3d1a1a;
-    --purple: #a371f7;
-    --purple-dim: #2d1f5e;
-    --teal: #39c5cf;
-    --teal-dim: #0d3038;
-    --mono: 'IBM Plex Mono', monospace;
-    --sans: 'IBM Plex Sans', sans-serif;
-    --radius: 6px;
-    --radius-lg: 10px;
+    --bg:#0d1117;--bg2:#161b22;--bg3:#1c2330;--border:#30363d;--border2:#21262d;
+    --text:#e6edf3;--text2:#8b949e;--text3:#484f58;
+    --accent:#388bfd;--accent-dim:#1f3f7a;
+    --green:#3fb950;--green-dim:#1a3a22;
+    --amber:#d29922;--amber-dim:#3d2c00;
+    --red:#f85149;--red-dim:#3d1a1a;
+    --purple:#a371f7;--purple-dim:#2d1f5e;
+    --teal:#39c5cf;--teal-dim:#0d3038;
+    --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+    --radius:6px;--radius-lg:10px;
   }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
-
-  /* LAYOUT */
-  .shell { display: flex; height: 100vh; overflow: hidden; }
-  .sidebar { width: 220px; flex-shrink: 0; background: var(--bg2); border-right: 1px solid var(--border2); display: flex; flex-direction: column; padding: 0; }
-  .main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
-
-  /* SIDEBAR */
-  .logo { padding: 18px 16px 14px; border-bottom: 1px solid var(--border2); }
-  .logo-tag { font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: .12em; text-transform: uppercase; margin-bottom: 4px; }
-  .logo-title { font-size: 13px; font-weight: 600; color: var(--text); }
-  .logo-sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
-
-  .nav { flex: 1; padding: 12px 8px; display: flex; flex-direction: column; gap: 2px; }
-  .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--radius); cursor: pointer; font-size: 13px; color: var(--text2); transition: all .15s; border: none; background: none; width: 100%; text-align: left; }
-  .nav-item:hover { background: var(--bg3); color: var(--text); }
-  .nav-item.active { background: var(--accent-dim); color: var(--accent); }
-  .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-  .nav-sep { height: 1px; background: var(--border2); margin: 8px 4px; }
-
-  .sidebar-foot { padding: 12px 16px; border-top: 1px solid var(--border2); font-size: 11px; color: var(--text3); }
-
-  /* TOPBAR */
-  .topbar { padding: 14px 24px; border-bottom: 1px solid var(--border2); display: flex; align-items: center; gap: 12px; background: var(--bg); position: sticky; top: 0; z-index: 10; }
-  .topbar-title { font-size: 15px; font-weight: 500; flex: 1; }
-  .topbar-badge { font-family: var(--mono); font-size: 10px; padding: 3px 8px; border-radius: 99px; border: 1px solid; }
-  .badge-ok { color: var(--green); border-color: var(--green); background: var(--green-dim); }
-  .badge-warn { color: var(--amber); border-color: var(--amber); background: var(--amber-dim); }
-  .badge-err { color: var(--red); border-color: var(--red); background: var(--red-dim); }
-  .badge-info { color: var(--accent); border-color: var(--accent); background: var(--accent-dim); }
-
-  /* CONTENT */
-  .content { padding: 24px; flex: 1; }
-  .panel { display: none; }
-  .panel.active { display: block; }
-
-  /* CONFIG PANEL */
-  .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 700px; }
-  .field { display: flex; flex-direction: column; gap: 6px; }
-  .field label { font-size: 12px; color: var(--text2); font-weight: 500; letter-spacing: .04em; }
-  .field input, .field select, .field textarea { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 12px; color: var(--text); font-family: var(--mono); font-size: 12px; width: 100%; outline: none; transition: border .15s; }
-  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
-  .field textarea { resize: vertical; min-height: 80px; font-family: var(--mono); font-size: 11px; }
-  .field-full { grid-column: 1 / -1; }
-  .hint { font-size: 11px; color: var(--text3); }
-
-  /* BUTTONS */
-  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid; transition: all .15s; font-family: var(--sans); }
-  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .btn-primary:hover { background: #58a6ff; border-color: #58a6ff; }
-  .btn-ghost { background: transparent; border-color: var(--border); color: var(--text2); }
-  .btn-ghost:hover { background: var(--bg3); color: var(--text); border-color: var(--border); }
-  .btn-danger { background: transparent; border-color: var(--red); color: var(--red); }
-  .btn-danger:hover { background: var(--red-dim); }
-  .btn-sm { padding: 5px 10px; font-size: 12px; }
-  .btn-green { background: var(--green); border-color: var(--green); color: #000; }
-  .btn-green:hover { background: #56d364; }
-  .btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-
-  /* SECTION HEADER */
-  .sec-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-  .sec-title { font-size: 16px; font-weight: 500; }
-  .sec-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
-
-  /* STATS ROW */
-  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
-  .stat-card { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius-lg); padding: 14px 16px; }
-  .stat-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
-  .stat-val { font-family: var(--mono); font-size: 24px; font-weight: 500; }
-  .stat-val.green { color: var(--green); }
-  .stat-val.amber { color: var(--amber); }
-  .stat-val.red { color: var(--red); }
-  .stat-val.blue { color: var(--accent); }
-
-  /* TABLE */
-  .table-wrap { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius-lg); overflow: hidden; }
-  table { width: 100%; border-collapse: collapse; }
-  th { padding: 10px 14px; text-align: left; font-size: 11px; color: var(--text2); font-weight: 500; text-transform: uppercase; letter-spacing: .06em; border-bottom: 1px solid var(--border2); white-space: nowrap; }
-  td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid var(--border2); vertical-align: middle; }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: var(--bg3); }
-  .td-mono { font-family: var(--mono); font-size: 12px; }
-
-  /* STATUS PILL */
-  .pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 99px; font-size: 11px; font-weight: 500; white-space: nowrap; }
-  .pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-  .pill-1 { color: var(--text2); background: var(--bg3); }
-  .pill-2 { color: var(--amber); background: var(--amber-dim); }
-  .pill-3 { color: var(--purple); background: var(--purple-dim); }
-  .pill-4 { color: var(--teal); background: var(--teal-dim); }
-  .pill-5 { color: var(--accent); background: var(--accent-dim); }
-  .pill-6 { color: var(--amber); background: var(--amber-dim); }
-  .pill-7 { color: var(--green); background: var(--green-dim); }
-
-  /* PRIO BADGE */
-  .prio { display: inline-block; width: 20px; height: 20px; border-radius: 4px; font-family: var(--mono); font-size: 11px; font-weight: 600; text-align: center; line-height: 20px; }
-  .prio-1 { background: var(--red-dim); color: var(--red); }
-  .prio-2 { background: var(--amber-dim); color: var(--amber); }
-  .prio-3 { background: var(--bg3); color: var(--text2); }
-
-  /* BUSCA */
-  .search-box { position: relative; margin-bottom: 20px; }
-  .search-box input { width: 100%; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px 16px 12px 44px; font-size: 14px; color: var(--text); outline: none; font-family: var(--sans); transition: border .15s; }
-  .search-box input:focus { border-color: var(--accent); }
-  .search-box input::placeholder { color: var(--text3); }
-  .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; stroke: var(--text3); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  .search-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); }
-
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+  .shell{display:flex;height:100vh;overflow:hidden}
+  .sidebar{width:224px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border2);display:flex;flex-direction:column}
+  .main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+  .logo{padding:18px 16px 14px;border-bottom:1px solid var(--border2)}
+  .logo-tag{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+  .logo-title{font-size:13px;font-weight:600}
+  .logo-sub{font-size:11px;color:var(--text2);margin-top:2px}
+  .nav{flex:1;padding:12px 8px;display:flex;flex-direction:column;gap:2px}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius);cursor:pointer;font-size:13px;color:var(--text2);transition:all .15s;border:none;background:none;width:100%;text-align:left}
+  .nav-item:hover{background:var(--bg3);color:var(--text)}
+  .nav-item.active{background:var(--accent-dim);color:var(--accent)}
+  .nav-item svg{width:16px;height:16px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .nav-sep{height:1px;background:var(--border2);margin:8px 4px}
+  .topbar{padding:14px 24px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:12px;background:var(--bg);position:sticky;top:0;z-index:10}
+  .topbar-title{font-size:15px;font-weight:500;flex:1}
+  .topbar-badge{font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:99px;border:1px solid}
+  .badge-ok{color:var(--green);border-color:var(--green);background:var(--green-dim)}
+  .badge-warn{color:var(--amber);border-color:var(--amber);background:var(--amber-dim)}
+  .badge-info{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+  .content{padding:24px;flex:1}
+  .panel{display:none}.panel.active{display:block}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field label{font-size:12px;color:var(--text2);font-weight:500;letter-spacing:.04em}
+  .field input,.field select,.field textarea{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;color:var(--text);font-family:var(--mono);font-size:12px;width:100%;outline:none;transition:border .15s}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent)}
+  .field textarea{resize:vertical;min-height:70px;font-size:11px}
+  .field-full{grid-column:1/-1}
+  .hint{font-size:11px;color:var(--text3)}
+  .btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:var(--radius);font-size:13px;font-weight:500;cursor:pointer;border:1px solid;transition:all .15s;font-family:var(--sans)}
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn-primary:hover{background:#58a6ff}
+  .btn-ghost{background:transparent;border-color:var(--border);color:var(--text2)}
+  .btn-ghost:hover{background:var(--bg3);color:var(--text)}
+  .btn-sm{padding:5px 10px;font-size:12px}
+  .btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .btn:disabled{opacity:.5;cursor:default}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+  .stat-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:14px 16px}
+  .stat-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+  .stat-val{font-family:var(--mono);font-size:24px;font-weight:500}
+  .stat-val.green{color:var(--green)}.stat-val.amber{color:var(--amber)}.stat-val.red{color:var(--red)}.stat-val.blue{color:var(--accent)}
+  .table-wrap{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);overflow:hidden}
+  table{width:100%;border-collapse:collapse}
+  th{padding:10px 14px;text-align:left;font-size:11px;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border2);white-space:nowrap}
+  td{padding:10px 14px;font-size:13px;border-bottom:1px solid var(--border2);vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:var(--bg3)}
+  .td-mono{font-family:var(--mono);font-size:12px}
+  .pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:500;white-space:nowrap}
+  .pill::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+  .pill-1{color:var(--text2);background:var(--bg3)}
+  .pill-2{color:var(--amber);background:var(--amber-dim)}
+  .pill-3{color:var(--purple);background:var(--purple-dim)}
+  .pill-35{color:var(--teal);background:var(--teal-dim)}
+  .pill-4{color:var(--teal);background:var(--teal-dim)}
+  .pill-5{color:var(--accent);background:var(--accent-dim)}
+  .pill-6{color:var(--amber);background:var(--amber-dim)}
+  .pill-7{color:var(--green);background:var(--green-dim)}
+  .prio{display:inline-block;width:20px;height:20px;border-radius:4px;font-family:var(--mono);font-size:11px;font-weight:600;text-align:center;line-height:20px}
+  .prio-1{background:var(--red-dim);color:var(--red)}.prio-2{background:var(--amber-dim);color:var(--amber)}.prio-3{background:var(--bg3);color:var(--text2)}
+  .filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+  .filter-select{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:6px 10px;color:var(--text);font-size:12px;outline:none;cursor:pointer}
+  .form-section{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:20px;margin-bottom:16px}
+  .form-section-title{font-size:12px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border2)}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+  .form-grid .field-full{grid-column:1/-1}
+  .form-grid .field-2{grid-column:span 2}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center}
+  .modal-overlay.open{display:flex}
+  .modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;width:560px;max-width:95vw;max-height:90vh;overflow-y:auto}
+  .modal-title{font-size:15px;font-weight:500;margin-bottom:16px}
+  .modal-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border2)}
+  .toast-container{position:fixed;bottom:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:8px}
+  .toast{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;font-size:13px;display:flex;align-items:center;gap:10px;animation:slide-in .2s ease;min-width:260px}
+  .toast.success{border-left:3px solid var(--green)}.toast.error{border-left:3px solid var(--red)}.toast.info{border-left:3px solid var(--accent)}
+  @keyframes slide-in{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+  .row-actions{display:flex;gap:4px;opacity:0;transition:opacity .15s}
+  tr:hover .row-actions{opacity:1}
+  .icon-btn{background:none;border:1px solid var(--border);border-radius:var(--radius);padding:4px;cursor:pointer;color:var(--text2);display:inline-flex;align-items:center}
+  .icon-btn:hover{background:var(--bg3);color:var(--text)}
+  .icon-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .empty{text-align:center;padding:48px 24px;color:var(--text3)}
+  .sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+  .sec-title{font-size:16px;font-weight:500}
+  .sec-sub{font-size:12px;color:var(--text2);margin-top:2px}
+  hr{border:none;border-top:1px solid var(--border2);margin:20px 0}
+  ::-webkit-scrollbar{width:6px;height:6px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+  /* LOGIN */
+  .login-screen{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center}
+  .login-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px;width:400px;text-align:center}
+  .login-logo{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.15em;margin-bottom:8px}
+  .login-title{font-size:18px;font-weight:500;margin-bottom:4px}
+  .login-sub{font-size:13px;color:var(--text2);margin-bottom:24px}
+  .login-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px}
+  .login-btn{background:var(--bg3);border:2px solid var(--border);border-radius:var(--radius-lg);padding:14px 8px;cursor:pointer;transition:all .15s;text-align:center}
+  .login-btn:hover{border-color:var(--accent);background:var(--accent-dim)}
+  .login-btn.selected{border-color:var(--accent);background:var(--accent-dim)}
+  .login-initials{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--accent);margin-bottom:4px}
+  .login-name{font-size:11px;color:var(--text2)}
+  /* REVISÃO */
+  .rev-section{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:18px;margin-bottom:14px}
+  .rev-header{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+  .rev-mat{font-family:var(--mono);font-size:15px;color:var(--accent);font-weight:600}
+  .rev-meta{color:var(--text2);font-size:12px}
+  .rev-progress-bar{height:5px;background:var(--bg3);border-radius:99px;overflow:hidden;margin-bottom:6px}
+  .rev-progress-fill{height:100%;border-radius:99px;transition:width .4s}
+  .rev-progress-text{font-size:11px;color:var(--text2);margin-bottom:14px}
+  .rev-avatars{display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+  .rev-av-wrap{display:flex;flex-direction:column;align-items:center;gap:3px}
+  .rev-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:600;border:2px solid}
+  .rev-av.pendente{background:var(--bg3);color:var(--text2);border-color:var(--border)}
+  .rev-av.feito{background:var(--green-dim);color:var(--green);border-color:var(--green)}
+  .rev-av.eu{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
+  .rev-av-label{font-size:10px;color:var(--text3)}
+  .rev-av-data{font-size:9px;color:var(--text3)}
+  .btn-revisar{width:100%;padding:10px;border-radius:var(--radius);border:none;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;font-family:var(--sans)}
+  .btn-revisar.pendente-eu{background:var(--accent);color:#fff}
+  .btn-revisar.pendente-eu:hover{background:#58a6ff}
+  .btn-revisar.ja-revisei{background:var(--green-dim);color:var(--green);cursor:default}
+  .btn-revisar.todos{background:var(--green);color:#000;cursor:default}
+  /* USER BADGE */
+  .user-badge{display:flex;align-items:center;gap:8px;padding:10px 16px;border-top:1px solid var(--border2);cursor:pointer}
+  .user-av{width:28px;height:28px;border-radius:50%;background:var(--accent-dim);color:var(--accent);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:600;flex-shrink:0}
+  .user-name{font-size:12px;color:var(--text)}
+  .user-hint{font-size:10px;color:var(--text3)}
+  .rev-badge{display:none;margin-left:auto;background:var(--red);color:#fff;font-size:10px;padding:1px 6px;border-radius:99px}
   /* CHAT */
-  .chat-area { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius-lg); padding: 16px; min-height: 200px; max-height: 400px; overflow-y: auto; margin-bottom: 12px; display: flex; flex-direction: column; gap: 12px; }
-  .chat-msg { display: flex; gap: 10px; }
-  .chat-avatar { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; }
-  .avatar-user { background: var(--accent-dim); color: var(--accent); }
-  .avatar-ai { background: var(--purple-dim); color: var(--purple); }
-  .chat-bubble { background: var(--bg3); border-radius: var(--radius); padding: 10px 14px; font-size: 13px; line-height: 1.6; flex: 1; white-space: pre-wrap; }
-  .chat-bubble.user { background: var(--accent-dim); }
-  .chat-bubble.typing::after { content: '▋'; animation: blink .8s infinite; }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-
-  /* FILTROS */
-  .filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
-  .filter-select { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 6px 10px; color: var(--text); font-size: 12px; outline: none; cursor: pointer; }
-
-  /* FORM NOVA OCORRÊNCIA */
-  .form-section { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 16px; }
-  .form-section-title { font-size: 12px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border2); }
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
-  .form-grid .field-full { grid-column: 1 / -1; }
-  .form-grid .field-2 { grid-column: span 2; }
-
-  /* MODAL */
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 100; align-items: center; justify-content: center; }
-  .modal-overlay.open { display: flex; }
-  .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; width: 500px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }
-  .modal-title { font-size: 15px; font-weight: 500; margin-bottom: 16px; }
-  .modal-foot { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border2); }
-
-  /* TOAST */
-  .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 200; display: flex; flex-direction: column; gap: 8px; }
-  .toast { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; font-size: 13px; display: flex; align-items: center; gap: 10px; animation: slide-in .2s ease; min-width: 260px; }
-  .toast.success { border-left: 3px solid var(--green); }
-  .toast.error { border-left: 3px solid var(--red); }
-  .toast.info { border-left: 3px solid var(--accent); }
-  @keyframes slide-in { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
-
-  /* LOADING */
-  .spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .6s linear infinite; }
-  @keyframes spin { to{transform:rotate(360deg)} }
-
-  /* REVISOR */
-  .revisor-cell { display: flex; align-items: center; gap: 6px; }
-  .revisor-avatar { width: 22px; height: 22px; border-radius: 50%; background: var(--green-dim); color: var(--green); font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
-
-  /* EMPTY */
-  .empty { text-align: center; padding: 48px 24px; color: var(--text3); }
-  .empty-icon { font-size: 32px; margin-bottom: 12px; }
-  .empty p { font-size: 13px; }
-
-  /* SCROLL */
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
-
-  /* DIVIDER */
-  hr { border: none; border-top: 1px solid var(--border2); margin: 20px 0; }
-
-  .row-actions { display: flex; gap: 4px; opacity: 0; transition: opacity .15s; }
-  tr:hover .row-actions { opacity: 1; }
-  .icon-btn { background: none; border: 1px solid var(--border); border-radius: var(--radius); padding: 4px; cursor: pointer; color: var(--text2); display: inline-flex; align-items: center; }
-  .icon-btn:hover { background: var(--bg3); color: var(--text); }
-  .icon-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .chat-area{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:16px;min-height:200px;max-height:380px;overflow-y:auto;margin-bottom:12px;display:flex;flex-direction:column;gap:12px}
+  .chat-msg{display:flex;gap:10px}
+  .chat-avatar{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600}
+  .avatar-user{background:var(--accent-dim);color:var(--accent)}
+  .avatar-ai{background:var(--purple-dim);color:var(--purple)}
+  .chat-bubble{background:var(--bg3);border-radius:var(--radius);padding:10px 14px;font-size:13px;line-height:1.6;flex:1;white-space:pre-wrap}
+  .chat-bubble.user{background:var(--accent-dim)}
+  .chat-bubble.typing::after{content:'▋';animation:blink .8s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+  .search-box{position:relative;margin-bottom:0}
+  .search-box input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 16px 12px 44px;font-size:14px;color:var(--text);outline:none;font-family:var(--sans);transition:border .15s}
+  .search-box input:focus{border-color:var(--accent)}
+  .search-box input::placeholder{color:var(--text3)}
+  .search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;stroke:var(--text3);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 </style>
 </head>
 <body>
 
-<div class="shell">
+<!-- LOGIN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">SERIPA-VII · SI</div>
+    <div class="login-title">Seção de Investigação</div>
+    <div class="login-sub">Identifique-se para continuar</div>
+    <div class="login-grid">
+      <div class="login-btn" onclick="selUser('PBO','Maj Pablo')" id="lu-PBO"><div class="login-initials">PBO</div><div class="login-name">Maj Pablo</div></div>
+      <div class="login-btn" onclick="selUser('CEO','Cp C. Eduardo')" id="lu-CEO"><div class="login-initials">CEO</div><div class="login-name">Cp C. Eduardo</div></div>
+      <div class="login-btn" onclick="selUser('RAV','Cp Ávila')" id="lu-RAV"><div class="login-initials">RAV</div><div class="login-name">Cp Ávila</div></div>
+      <div class="login-btn" onclick="selUser('JON','Jon')" id="lu-JON"><div class="login-initials">JON</div><div class="login-name">Jon</div></div>
+      <div class="login-btn" onclick="selUser('MAT','Mat')" id="lu-MAT"><div class="login-initials">MAT</div><div class="login-name">Mat</div></div>
+      <div class="login-btn" onclick="selUser('EMI','Emi')" id="lu-EMI"><div class="login-initials">EMI</div><div class="login-name">Emi</div></div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doLogin()">Entrar</button>
+  </div>
+</div>
 
-  <!-- SIDEBAR -->
+<div class="shell">
   <aside class="sidebar">
     <div class="logo">
       <div class="logo-tag">SERIPA-VII</div>
@@ -221,98 +194,94 @@
     </div>
     <nav class="nav">
       <button class="nav-item active" onclick="showPanel('painel')" id="nav-painel">
-        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-        Painel
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Painel
+      </button>
+      <button class="nav-item" onclick="showPanel('revisao')" id="nav-revisao">
+        <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Revisar minutas
+        <span class="rev-badge" id="rev-badge"></span>
       </button>
       <button class="nav-item" onclick="showPanel('busca')" id="nav-busca">
-        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        Busca IA
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Busca IA
       </button>
       <button class="nav-item" onclick="showPanel('ocorrencias')" id="nav-ocorrencias">
-        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-        Ocorrências
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Ocorrências
       </button>
       <button class="nav-item" onclick="showPanel('nova')" id="nav-nova">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-        Nova Ocorrência
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Nova Ocorrência
       </button>
       <div class="nav-sep"></div>
       <button class="nav-item" onclick="showPanel('config')" id="nav-config">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        Configurações
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Configurações
       </button>
     </nav>
+    <div class="user-badge" onclick="logout()">
+      <div class="user-av" id="sb-av">?</div>
+      <div><div class="user-name" id="sb-name">—</div><div class="user-hint">clique para sair</div></div>
+    </div>
     <div class="sidebar-foot" id="conn-status">Não configurado</div>
   </aside>
 
-  <!-- MAIN -->
   <main class="main">
 
     <!-- PAINEL -->
     <div id="panel-painel" class="panel active">
       <div class="topbar">
         <div class="topbar-title">Painel Geral</div>
-        <span class="topbar-badge" id="sync-badge">Sincronize nas configurações</span>
+        <span class="topbar-badge badge-warn" id="sync-badge">Configure nas ⚙</span>
         <button class="btn btn-ghost btn-sm" onclick="loadData()">
-          <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-          Sincronizar
+          <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Sincronizar
         </button>
       </div>
       <div class="content">
-        <div class="stats" id="stats-row">
-          <div class="stat-card"><div class="stat-label">Total de ocorrências</div><div class="stat-val blue" id="st-total">—</div></div>
+        <div class="stats">
+          <div class="stat-card"><div class="stat-label">Total</div><div class="stat-val blue" id="st-total">—</div></div>
           <div class="stat-card"><div class="stat-label">Em andamento</div><div class="stat-val amber" id="st-andamento">—</div></div>
           <div class="stat-card"><div class="stat-label">Aguardando laudo</div><div class="stat-val red" id="st-aguardando">—</div></div>
           <div class="stat-card"><div class="stat-label">Concluídas</div><div class="stat-val green" id="st-concluidas">—</div></div>
         </div>
+        <div class="sec-head"><div><div class="sec-title">Ocorrências recentes</div><div class="sec-sub">Últimas da planilha</div></div></div>
+        <div class="table-wrap" id="painel-table"><div class="empty"><p>Sincronize para carregar dados.</p></div></div>
+      </div>
+    </div>
 
-        <div class="sec-head">
-          <div>
-            <div class="sec-title">Ocorrências recentes</div>
-            <div class="sec-sub">Últimas atualizações da planilha</div>
-          </div>
-        </div>
-        <div class="table-wrap" id="painel-table">
-          <div class="empty"><div class="empty-icon">📋</div><p>Sincronize nas configurações para carregar dados.</p></div>
-        </div>
+    <!-- REVISÃO -->
+    <div id="panel-revisao" class="panel">
+      <div class="topbar">
+        <div class="topbar-title">Revisar Minutas</div>
+        <span class="topbar-badge badge-info">Quórum: 6 revisores</span>
+      </div>
+      <div class="content">
+        <p style="color:var(--text2);font-size:13px;margin-bottom:20px;line-height:1.6">Minutas na fase de revisão. Confirme as que você já leu. A minuta avança para "Revisada" apenas quando PBO, CEO, RAV, JON, MAT e EMI confirmarem.</p>
+        <div id="revisao-lista"><div class="empty"><p>Nenhuma minuta em revisão no momento.</p></div></div>
       </div>
     </div>
 
     <!-- BUSCA IA -->
     <div id="panel-busca" class="panel">
-      <div class="topbar">
-        <div class="topbar-title">Busca com IA</div>
-        <span class="topbar-badge badge-info">Claude Sonnet</span>
-      </div>
+      <div class="topbar"><div class="topbar-title">Busca com IA</div><span class="topbar-badge badge-info">Claude Sonnet</span></div>
       <div class="content">
-        <p style="color:var(--text2);font-size:13px;margin-bottom:16px;line-height:1.6">
-          Faça perguntas em linguagem natural sobre as investigações. A IA lê os dados da planilha e responde de forma contextualizada.
-        </p>
-
         <div class="chat-area" id="chat-area">
           <div class="chat-msg">
             <div class="chat-avatar avatar-ai">IA</div>
-            <div class="chat-bubble">Olá! Sou o assistente do SERIPA-VII. Posso consultar as investigações da planilha e responder perguntas como:<br><br>• "Quais investigações do Maj Pablo estão em atraso?"<br>• "Quantas ocorrências aguardam laudo do DCTA?"<br>• "Liste as prioridade 1 sem revisor definido"<br>• "Gere o briefing semanal da SI"<br><br>Sincronize os dados nas configurações antes de consultar.</div>
+            <div class="chat-bubble">Olá! Consulte as investigações em linguagem natural:<br><br>• "Quais investigações do Maj Pablo estão em atraso?"<br>• "Quantas aguardam laudo do DCTA?"<br>• "Minutas CFIT em revisão"<br>• "Gere o briefing quinzenal da SI"<br>• "Status das revisões em andamento"</div>
           </div>
         </div>
-
-        <div style="display:flex;gap:8px;">
-          <div class="search-box" style="flex:1;margin:0">
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <div class="search-box" style="flex:1">
             <svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             <input type="text" id="query-input" placeholder="Digite sua pergunta sobre as investigações..." onkeydown="if(event.key==='Enter')askAI()">
           </div>
-          <button class="btn btn-primary" onclick="askAI()" id="ask-btn">
-            <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-            Enviar
+          <button class="btn btn-primary" onclick="askAI()">
+            <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Enviar
           </button>
         </div>
-
-        <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap">
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
           <button class="btn btn-ghost btn-sm" onclick="quickQuery('Liste as investigações com prazo vencido ou sem prazo definido')">⚠️ Prazos vencidos</button>
-          <button class="btn btn-ghost btn-sm" onclick="quickQuery('Quais investigações aguardam laudo externo do DCTA ou SAFRAN?')">⏳ Aguardando laudo</button>
-          <button class="btn btn-ghost btn-sm" onclick="quickQuery('Gere o briefing semanal completo da Seção de Investigação com resumo por investigador')">📋 Briefing semanal</button>
-          <button class="btn btn-ghost btn-sm" onclick="quickQuery('Quais ocorrências ainda não têm revisor definido?')">👁 Sem revisor</button>
+          <button class="btn btn-ghost btn-sm" onclick="quickQuery('Quais aguardam laudo técnico e de qual órgão?')">⏳ Aguardando laudo</button>
+          <button class="btn btn-ghost btn-sm" onclick="quickQuery('Gere o briefing quinzenal completo da SI com status de cada investigação')">📋 Briefing quinzenal</button>
+          <button class="btn btn-ghost btn-sm" onclick="quickQuery('Status das minutas em revisão e quantos revisores já confirmaram cada uma')">👁 Status revisões</button>
           <button class="btn btn-ghost btn-sm" onclick="quickQuery('Mostre as ocorrências de prioridade 1 em andamento')">🔴 Prioridade 1</button>
+          <button class="btn btn-ghost btn-sm" onclick="quickQuery('Quais são as categorias SIPAER das ocorrências registradas?')">📊 Por categoria</button>
         </div>
       </div>
     </div>
@@ -322,129 +291,91 @@
       <div class="topbar">
         <div class="topbar-title">Todas as Ocorrências</div>
         <button class="btn btn-primary btn-sm" onclick="showPanel('nova')">
-          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Nova
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nova
         </button>
       </div>
       <div class="content">
         <div class="filters">
-          <select class="filter-select" id="f-investigador" onchange="renderTable()">
+          <select class="filter-select" id="f-inv" onchange="renderTable()">
             <option value="">Todos investigadores</option>
-            <option>CP AVILA</option>
-            <option>MAJ PABLO</option>
-            <option>CP CARLOS EDUARDO</option>
-            <option>CP JAIRO</option>
+            <option>CP AVILA</option><option>MAJ PABLO</option><option>CP CARLOS EDUARDO</option><option>CP JAIRO</option>
           </select>
-          <select class="filter-select" id="f-status" onchange="renderTable()">
+          <select class="filter-select" id="f-st" onchange="renderTable()">
             <option value="">Todos status</option>
-            <option value="1">Aguardando laudo externo</option>
-            <option value="2">Confecção da minuta</option>
-            <option value="3">Revisão interna</option>
-            <option value="4">Aguardando reunião de liberação</option>
-            <option value="5">Upload no Dédalo</option>
-            <option value="6">Apreciação do chefe</option>
-            <option value="7">Concluído</option>
+            <option value="1">Aguardando laudo</option><option value="2">Confecção da minuta</option>
+            <option value="3">Em revisão</option><option value="3.5">Revisada</option>
+            <option value="4">Aguard. reunião</option><option value="5">Upload Dédalo</option>
+            <option value="6">Apreciação chefe</option><option value="7">Concluído</option>
           </select>
           <select class="filter-select" id="f-ano" onchange="renderTable()">
             <option value="">Todos anos</option>
-            <option>2023</option>
-            <option>2024</option>
-            <option>2025</option>
-            <option>2026</option>
+            <option>2023</option><option>2024</option><option>2025</option><option>2026</option>
           </select>
           <select class="filter-select" id="f-tipo" onchange="renderTable()">
             <option value="">Todos tipos</option>
-            <option>Acidente</option>
-            <option>Incidente Grave</option>
-            <option>Incidente</option>
+            <option>Acidente</option><option>Incidente Grave</option><option>Incidente</option>
           </select>
-          <button class="btn btn-ghost btn-sm" onclick="clearFilters()">Limpar filtros</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearFilters()">Limpar</button>
         </div>
-        <div class="table-wrap" id="main-table">
-          <div class="empty"><div class="empty-icon">📋</div><p>Sincronize os dados nas configurações.</p></div>
-        </div>
+        <div class="table-wrap" id="main-table"><div class="empty"><p>Sincronize os dados.</p></div></div>
       </div>
     </div>
 
     <!-- NOVA OCORRÊNCIA -->
     <div id="panel-nova" class="panel">
-      <div class="topbar">
-        <div class="topbar-title">Registrar Nova Ocorrência</div>
-      </div>
+      <div class="topbar"><div class="topbar-title">Registrar Nova Ocorrência</div></div>
       <div class="content">
-        <form onsubmit="saveNew(event)" style="max-width:860px">
+        <form onsubmit="saveNew(event)" style="max-width:900px">
 
           <div class="form-section">
-            <div class="form-section-title">Dados da ocorrência</div>
+            <div class="form-section-title">Identificação da ocorrência</div>
             <div class="form-grid">
-              <div class="field">
-                <label>Matrícula *</label>
-                <input type="text" id="n-matricula" placeholder="PT-ABC" required style="text-transform:uppercase">
+              <div class="field"><label>Matrícula *</label><input type="text" id="n-mat" required style="text-transform:uppercase" placeholder="PT-ABC"></div>
+              <div class="field"><label>Ano *</label><input type="number" id="n-ano" placeholder="2025" min="2000" max="2099" required></div>
+              <div class="field"><label>Tipo de ocorrência *</label>
+                <select id="n-tipo" required><option value="">Selecione...</option><option>Acidente</option><option>Incidente Grave</option><option>Incidente</option><option>Ocorrência de Solo</option></select>
               </div>
-              <div class="field">
-                <label>Ano da ocorrência *</label>
-                <input type="number" id="n-ano" placeholder="2025" min="2000" max="2099" required>
-              </div>
-              <div class="field">
-                <label>Tipo de ocorrência *</label>
-                <select id="n-tipo" required>
-                  <option value="">Selecione...</option>
-                  <option>Acidente</option>
-                  <option>Incidente Grave</option>
-                  <option>Incidente</option>
-                  <option>Ocorrência de Solo</option>
+              <div class="field"><label>Categoria SIPAER (MCA 3-6)</label>
+                <select id="n-cat">
+                  <option value="">— Selecione —</option>
+                  <option>ADRM - Aeródromo</option>
+                  <option>ARC - Contato anormal com pista</option>
+                  <option>BIRD - Colisão com ave</option>
+                  <option>CABIN - Segurança na cabine</option>
+                  <option>CFIT - Voo controlado contra o terreno</option>
+                  <option>CTOL - Colisão com obstáculo (decolagem/pouso)</option>
+                  <option>EVAC - Evacuação</option>
+                  <option>EXTL - Operação com carga externa</option>
+                  <option>F-NI - Fogo/fumaça (sem impacto)</option>
+                  <option>F-POST - Fogo/fumaça (pós-impacto)</option>
+                  <option>FUEL - Combustível</option>
+                  <option>GCOL - Colisão no solo</option>
+                  <option>ICE - Formação de gelo</option>
+                  <option>LALT - Operação a baixa altitude</option>
+                  <option>LOC-G - Perda de controle no solo</option>
+                  <option>LOC-I - Perda de controle em voo</option>
+                  <option>MAC - Colisão no ar</option>
+                  <option>MED - Incapacitação médica</option>
+                  <option>OTHR - Outros</option>
+                  <option>RAMP - Ocorrência em solo/rampa</option>
+                  <option>RI - Incursão em pista</option>
+                  <option>SCF-NP - Falha sistema/componente (não motor)</option>
+                  <option>SCF-PP - Falha sistema/componente (motor)</option>
+                  <option>TURB - Turbulência</option>
+                  <option>UIMC - IMC não intencional</option>
+                  <option>USOS - Pouso aquém/além da pista</option>
+                  <option>WILD - Colisão com fauna (não ave)</option>
+                  <option>WSTRW - Cortante de vento/tempestade</option>
                 </select>
               </div>
-              <div class="field">
-                <label>Data da ocorrência</label>
-                <input type="date" id="n-data-ocorr">
+              <div class="field"><label>Data da ocorrência</label><input type="date" id="n-data"></div>
+              <div class="field"><label>Local / Aeródromo</label><input type="text" id="n-local" placeholder="SBRF / Recife-PE"></div>
+              <div class="field"><label>UF</label>
+                <select id="n-uf"><option value="">—</option><option>AC</option><option>AL</option><option>AM</option><option>AP</option><option>BA</option><option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option><option>MG</option><option>MS</option><option>MT</option><option>PA</option><option>PB</option><option>PE</option><option>PI</option><option>PR</option><option>RJ</option><option>RN</option><option>RO</option><option>RR</option><option>RS</option><option>SC</option><option>SE</option><option>SP</option><option>TO</option></select>
               </div>
-              <div class="field">
-                <label>Aeródromo / Localidade</label>
-                <input type="text" id="n-local" placeholder="SBRF / Recife-PE">
-              </div>
-              <div class="field">
-                <label>UF</label>
-                <select id="n-uf">
-                  <option value="">—</option>
-                  <option>AC</option><option>AL</option><option>AM</option><option>AP</option>
-                  <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
-                  <option>GO</option><option>MA</option><option>MG</option><option>MS</option>
-                  <option>MT</option><option>PA</option><option>PB</option><option>PE</option>
-                  <option>PI</option><option>PR</option><option>RJ</option><option>RN</option>
-                  <option>RO</option><option>RR</option><option>RS</option><option>SC</option>
-                  <option>SE</option><option>SP</option><option>TO</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-section">
-            <div class="form-section-title">Aeronave</div>
-            <div class="form-grid">
-              <div class="field">
-                <label>Fabricante</label>
-                <input type="text" id="n-fabricante" placeholder="EMBRAER, CESSNA...">
-              </div>
-              <div class="field">
-                <label>Modelo</label>
-                <input type="text" id="n-modelo" placeholder="C172, PA-28, EMB-202A...">
-              </div>
-              <div class="field">
-                <label>Fase do voo</label>
-                <select id="n-fase">
-                  <option value="">—</option>
-                  <option>Decolagem</option>
-                  <option>Subida</option>
-                  <option>Cruzeiro</option>
-                  <option>Descida</option>
-                  <option>Aproximação</option>
-                  <option>Pouso</option>
-                  <option>Táxi</option>
-                  <option>Solo (estacionado)</option>
-                  <option>Manutenção</option>
-                  <option>Aplicação agrícola</option>
-                </select>
+              <div class="field"><label>Modelo da aeronave</label><input type="text" id="n-mod" placeholder="C172, PA-28, EMB-202A..."></div>
+              <div class="field"><label>Fase do voo</label>
+                <select id="n-fase"><option value="">—</option><option>Decolagem</option><option>Subida</option><option>Cruzeiro</option><option>Descida</option><option>Aproximação</option><option>Pouso</option><option>Táxi</option><option>Solo (estacionado)</option><option>Aplicação agrícola</option><option>Manutenção</option></select>
               </div>
             </div>
           </div>
@@ -452,64 +383,31 @@
           <div class="form-section">
             <div class="form-section-title">Atribuição e controle</div>
             <div class="form-grid">
-              <div class="field">
-                <label>Investigador responsável *</label>
-                <select id="n-resp" required>
-                  <option value="">Selecione...</option>
-                  <option>CP AVILA</option>
-                  <option>MAJ PABLO</option>
-                  <option>CP CARLOS EDUARDO</option>
-                  <option>CP JAIRO</option>
-                </select>
+              <div class="field"><label>Responsável *</label>
+                <select id="n-resp" required><option value="">Selecione...</option><option>CP AVILA</option><option>MAJ PABLO</option><option>CP CARLOS EDUARDO</option><option>CP JAIRO</option></select>
               </div>
-              <div class="field">
-                <label>Célula</label>
-                <select id="n-celula">
-                  <option>SI</option>
-                  <option>SP</option>
-                  <option>SA</option>
-                </select>
+              <div class="field"><label>Célula</label>
+                <select id="n-cel"><option>SI</option><option>SP</option><option>SA</option></select>
               </div>
-              <div class="field">
-                <label>Prioridade</label>
-                <select id="n-prior">
-                  <option value="">—</option>
-                  <option value="1">1 — Alta</option>
-                  <option value="2">2 — Média</option>
-                  <option value="3">3 — Baixa</option>
-                </select>
+              <div class="field"><label>Prioridade</label>
+                <select id="n-prior"><option value="">—</option><option value="1">1 — Alta</option><option value="2">2 — Média</option><option value="3">3 — Baixa</option></select>
               </div>
-              <div class="field">
-                <label>Data de início</label>
-                <input type="date" id="n-inicio">
+              <div class="field"><label>Data de início</label><input type="date" id="n-inicio"></div>
+              <div class="field"><label>Prazo</label><input type="date" id="n-prazo"></div>
+              <div class="field"><label>Aguardando laudo técnico</label>
+                <select id="n-pend"><option value="—">—</option><option>DCTA</option><option>SAFRAN</option><option>AMR - DCTA</option><option>ANAC</option><option>DECEA</option><option>COMARA</option><option>Outra</option></select>
               </div>
-              <div class="field">
-                <label>Prazo</label>
-                <input type="date" id="n-prazo">
+              <div class="field"><label>Status inicial</label>
+                <select id="n-st"><option value="2">2 — Confecção da minuta</option><option value="1">1 — Aguardando laudo técnico</option></select>
               </div>
-              <div class="field">
-                <label>Status inicial</label>
-                <select id="n-status">
-                  <option value="2">Confecção da minuta</option>
-                  <option value="1">Aguardando laudo externo</option>
-                  <option value="3">Revisão interna</option>
-                </select>
-              </div>
-              <div class="field field-full">
-                <label>Ações / Observações iniciais</label>
-                <textarea id="n-acoes" placeholder="Descreva o estado atual da investigação..."></textarea>
-              </div>
-              <div class="field field-full">
-                <label>Nº do RAI / link no Dédalo</label>
-                <input type="text" id="n-rai" placeholder="RAI autenticado em DD/MM/AAAA ou URL do Dédalo">
-              </div>
+              <div class="field field-full"><label>Ações / Observações</label><textarea id="n-acoes" placeholder="Estado atual da investigação..."></textarea></div>
+              <div class="field field-full"><label>RAI / Link Dédalo</label><input type="text" id="n-rai" placeholder="RAI autenticado em DD/MM/AAAA ou URL do Dédalo"></div>
             </div>
           </div>
 
           <div style="display:flex;gap:8px">
             <button type="submit" class="btn btn-primary" id="save-btn">
-              <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-              Salvar na planilha
+              <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Salvar na planilha
             </button>
             <button type="button" class="btn btn-ghost" onclick="clearForm()">Limpar</button>
           </div>
@@ -519,585 +417,406 @@
 
     <!-- CONFIG -->
     <div id="panel-config" class="panel">
-      <div class="topbar">
-        <div class="topbar-title">Configurações de integração</div>
-      </div>
+      <div class="topbar"><div class="topbar-title">Configurações</div></div>
       <div class="content" style="max-width:700px">
-
         <div class="form-section">
-          <div class="form-section-title">Google Apps Script (intermediário)</div>
-          <div class="config-grid">
-            <div class="field field-full">
-              <label>URL do Apps Script</label>
-              <input type="text" id="cfg-script-url" placeholder="https://script.google.com/macros/s/.../exec">
-              <div class="hint">Cole aqui a URL gerada ao implantar o Apps Script como "App da Web".</div>
-            </div>
-            <div class="field field-full">
-              <label>Nome da aba principal</label>
-              <input type="text" id="cfg-sheet-name" value="S.I INV." placeholder="S.I INV.">
-            </div>
+          <div class="form-section-title">Google Apps Script</div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div class="field"><label>URL do Apps Script</label><input type="text" id="cfg-url" placeholder="https://script.google.com/macros/s/.../exec"><div class="hint">URL gerada ao implantar o Apps Script como App da Web.</div></div>
+            <div class="field"><label>Nome da aba</label><input type="text" id="cfg-aba" value="S.I INV."></div>
           </div>
         </div>
-
         <div class="form-section">
           <div class="form-section-title">API Claude (Anthropic)</div>
-          <div class="config-grid">
-            <div class="field field-full">
-              <label>Chave de API Anthropic</label>
-              <input type="password" id="cfg-claude-key" placeholder="sk-ant-...">
-              <div class="hint">Obtenha em console.anthropic.com — a chave fica apenas no navegador.</div>
-            </div>
-          </div>
+          <div class="field"><label>Chave de API</label><input type="password" id="cfg-key" placeholder="sk-ant-..."><div class="hint">Obtenha em console.anthropic.com</div></div>
         </div>
-
-        <div style="display:flex;gap:8px;margin-top:4px">
+        <div style="display:flex;gap:8px">
           <button class="btn btn-primary" onclick="saveConfig()">
-            <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-            Salvar configurações
+            <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Salvar
           </button>
-          <button class="btn btn-ghost" onclick="testConnection()">
-            <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-            Testar conexão
+          <button class="btn btn-ghost" onclick="testConn()">
+            <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Testar conexão
           </button>
         </div>
-
         <hr>
         <div class="form-section">
-          <div class="form-section-title">Estrutura esperada da planilha (colunas)</div>
-          <div style="font-family:var(--mono);font-size:11px;color:var(--text2);line-height:1.9">
-            A | CÉLULA<br>
-            B | MATRÍCULA<br>
-            C | RESP (investigador)<br>
-            D | INÍCIO<br>
-            E | PRAZO<br>
-            F | PRIOR.<br>
-            G | CHECK-IN<br>
-            H | FEITO<br>
-            I | AÇÕES<br>
-            J | FEEDBACK<br>
-            K | TIPO (Acidente/Incidente...)<br>
-            L | DATA DA OCORRÊNCIA<br>
-            M | LOCAL / UF<br>
-            N | MODELO DA AERONAVE<br>
-            O | REVISOR<br>
-            P | DATA DA REVISÃO<br>
-            Q | APROVADOR<br>
-            R | STATUS (1-7)<br>
-            S | RAI / LINK DÉDALO
+          <div class="form-section-title">Mapeamento de colunas (planilha)</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text2);line-height:2">
+            B=CÉLULA · C=MATRÍCULA · D=ANO · E=TIPO · F=DATA OCO · G=LOCAL · H=UF<br>
+            I=MODELO · J=FASE DO VOO · K=RESPONSÁVEL · L=INÍCIO · M=PRAZO · N=PRIOR.<br>
+            O=STATUS (1–7) · P=AGUARD.LAUDO · Q=AÇÕES · R=FEEDBACK<br>
+            S=REVISÕES · T=APROVADOR · U=RAI/DÉDALO · V=CATEGORIA SIPAER
           </div>
         </div>
       </div>
     </div>
-
   </main>
 </div>
 
 <!-- MODAL ATUALIZAR -->
-<div class="modal-overlay" id="modal-update">
+<div class="modal-overlay" id="modal-upd">
   <div class="modal">
-    <div class="modal-title" id="modal-mat">Atualizar ocorrência</div>
+    <div class="modal-title" id="modal-title">Atualizar ocorrência</div>
     <input type="hidden" id="modal-row">
     <div style="display:flex;flex-direction:column;gap:12px">
-      <div class="field">
-        <label>Status</label>
-        <select id="m-status">
-          <option value="1">1 — Aguardando laudo externo</option>
+      <div class="field"><label>Status</label>
+        <select id="m-st">
+          <option value="1">1 — Aguardando laudo técnico</option>
           <option value="2">2 — Confecção da minuta</option>
-          <option value="3">3 — Revisão interna</option>
+          <option value="3">3 — Em revisão (enviar para revisores)</option>
           <option value="4">4 — Aguardando reunião de liberação</option>
           <option value="5">5 — Upload no Dédalo</option>
           <option value="6">6 — Apreciação do chefe</option>
-          <option value="7">7 — Concluído</option>
+          <option value="7">7 — Concluído / RF emitido</option>
         </select>
       </div>
-      <div class="field">
-        <label>Revisor</label>
-        <select id="m-revisor">
-          <option value="">— Sem revisor —</option>
-          <option>CP AVILA</option>
-          <option>MAJ PABLO</option>
-          <option>CP CARLOS EDUARDO</option>
-          <option>CP JAIRO</option>
+      <div class="field"><label>Aguardando laudo técnico</label>
+        <select id="m-pend"><option value="—">—</option><option>DCTA</option><option>SAFRAN</option><option>AMR - DCTA</option><option>ANAC</option><option>DECEA</option><option>COMARA</option><option>Outra</option></select>
+      </div>
+      <div class="field"><label>Categoria SIPAER</label>
+        <select id="m-cat">
+          <option value="">— Selecione —</option>
+          <option>ADRM - Aeródromo</option><option>ARC - Contato anormal com pista</option>
+          <option>BIRD - Colisão com ave</option><option>CFIT - Voo controlado contra o terreno</option>
+          <option>CTOL - Colisão com obstáculo (decolagem/pouso)</option><option>F-NI - Fogo/fumaça (sem impacto)</option>
+          <option>FUEL - Combustível</option><option>LALT - Operação a baixa altitude</option>
+          <option>LOC-G - Perda de controle no solo</option><option>LOC-I - Perda de controle em voo</option>
+          <option>MAC - Colisão no ar</option><option>RI - Incursão em pista</option>
+          <option>SCF-NP - Falha sistema/componente (não motor)</option>
+          <option>SCF-PP - Falha sistema/componente (motor)</option>
+          <option>TURB - Turbulência</option><option>UIMC - IMC não intencional</option>
+          <option>USOS - Pouso aquém/além da pista</option><option>WILD - Colisão com fauna (não ave)</option>
+          <option>OTHR - Outros</option>
         </select>
       </div>
-      <div class="field">
-        <label>Ações / Observações</label>
-        <textarea id="m-acoes" style="min-height:60px"></textarea>
-      </div>
-      <div class="field">
-        <label>Feedback / Pendências</label>
-        <textarea id="m-feedback" style="min-height:60px"></textarea>
-      </div>
+      <div class="field"><label>Ações / Observações</label><textarea id="m-acoes" style="min-height:60px"></textarea></div>
+      <div class="field"><label>Feedback / Pendências</label><textarea id="m-fb" style="min-height:60px"></textarea></div>
     </div>
     <div class="modal-foot">
       <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveUpdate()">
-        <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><polyline points="20 6 9 17 4 12"/></svg>
-        Salvar na planilha
-      </button>
+      <button class="btn btn-primary" onclick="saveUpdate()"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Salvar</button>
     </div>
   </div>
 </div>
 
-<!-- TOAST CONTAINER -->
 <div class="toast-container" id="toasts"></div>
 
 <script>
-// ─── ESTADO ──────────────────────────────────────────────────────────────────
-let DATA = [];
-let CONFIG = {};
-let accessToken = null;
-
+// ─── CONSTANTES ───────────────────────────────────────────────────────────────
+const REVISORES = ['PBO','CEO','RAV','JON','MAT','EMI'];
+const REVISOR_NOMES = {PBO:'Maj Pablo',CEO:'Cp C. Eduardo',RAV:'Cp Ávila',JON:'Jon',MAT:'Mat',EMI:'Emi'};
 const STATUS_LABELS = {
-  '1': 'Aguardando laudo externo',
-  '2': 'Confecção da minuta',
-  '3': 'Revisão interna',
-  '4': 'Aguard. reunião liberação',
-  '5': 'Upload no Dédalo',
-  '6': 'Apreciação do chefe',
-  '7': 'Concluído / RF emitido'
+  '1':'Aguardando laudo técnico','2':'Confecção da minuta',
+  '3':'Em revisão','3.5':'Revisada — todos confirmaram',
+  '4':'Aguard. reunião de liberação','5':'Upload no Dédalo',
+  '6':'Apreciação do chefe','7':'Concluído / RF emitido'
 };
+// Mapeamento de colunas (índice 0 = col A)
+// B=1,C=2,D=3,E=4,F=5,G=6,H=7,I=8,J=9,K=10,L=11,M=12,N=13,O=14,P=15,Q=16,R=17,S=18,T=19,U=20,V=21
+const COL = {cel:1,mat:2,ano:3,tipo:4,dataOco:5,local:6,uf:7,modelo:8,fase:9,resp:10,inicio:11,prazo:12,prior:13,status:14,pend:15,acoes:16,feedback:17,revisoes:18,aprovador:19,rai:20,cat:21};
 
-// ─── INIT ─────────────────────────────────────────────────────────────────────
-window.onload = () => {
-  loadConfig();
-  if (!CONFIG.scriptUrl) {
-    DATA = getMockData();
-    renderStats();
-    renderTable();
-    renderPainelTable();
-  }
-};
+let DATA=[], CONFIG={}, USER=null, SEL_USER=null;
+
+// ─── LOGIN ────────────────────────────────────────────────────────────────────
+function selUser(ini,nome){SEL_USER={initials:ini,name:nome};document.querySelectorAll('.login-btn').forEach(b=>b.classList.remove('selected'));document.getElementById('lu-'+ini).classList.add('selected');}
+function doLogin(){if(!SEL_USER){alert('Selecione seu nome.');return;}USER=SEL_USER;sessionStorage.setItem('su',JSON.stringify(USER));document.getElementById('login-screen').style.display='none';document.getElementById('sb-av').textContent=USER.initials;document.getElementById('sb-name').textContent=USER.name;init();}
+function logout(){sessionStorage.removeItem('su');USER=null;SEL_USER=null;document.querySelectorAll('.login-btn').forEach(b=>b.classList.remove('selected'));document.getElementById('login-screen').style.display='flex';}
+window.onload=()=>{const s=sessionStorage.getItem('su');if(s){USER=JSON.parse(s);document.getElementById('login-screen').style.display='none';document.getElementById('sb-av').textContent=USER.initials;document.getElementById('sb-name').textContent=USER.name;init();}};
+function init(){loadConfig();if(!CONFIG.scriptUrl){DATA=getMock();renderAll();}else loadData();}
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
-function saveConfig() {
-  CONFIG = {
-    scriptUrl: document.getElementById('cfg-script-url').value.trim(),
-    sheetName: document.getElementById('cfg-sheet-name').value.trim() || 'S.I INV.',
-    claudeKey: document.getElementById('cfg-claude-key').value.trim()
-  };
-  localStorage.setItem('seripa_config', JSON.stringify(CONFIG));
-  toast('Configurações salvas!', 'success');
-  updateStatusBadge();
-}
-
-function loadConfig() {
-  const raw = localStorage.getItem('seripa_config');
-  if (raw) {
-    CONFIG = JSON.parse(raw);
-    document.getElementById('cfg-script-url').value = CONFIG.scriptUrl || '';
-    document.getElementById('cfg-sheet-name').value = CONFIG.sheetName || 'S.I INV.';
-    document.getElementById('cfg-claude-key').value = CONFIG.claudeKey || '';
-  }
-  updateStatusBadge();
-}
-
-function updateStatusBadge() {
-  const el = document.getElementById('conn-status');
-  const badge = document.getElementById('sync-badge');
-  if (CONFIG.scriptUrl) {
-    el.textContent = '✓ Apps Script configurado';
-    el.style.color = 'var(--green)';
-    badge.className = 'topbar-badge badge-ok';
-    badge.textContent = 'Conectado';
-  } else {
-    el.textContent = '○ Não configurado';
-    el.style.color = 'var(--text3)';
-    badge.className = 'topbar-badge badge-warn';
-    badge.textContent = 'Configure nas ⚙ Config';
-  }
-}
+function saveConfig(){CONFIG={scriptUrl:document.getElementById('cfg-url').value.trim(),sheetName:document.getElementById('cfg-aba').value.trim()||'S.I INV.',claudeKey:document.getElementById('cfg-key').value.trim()};localStorage.setItem('sc',JSON.stringify(CONFIG));toast('Configurações salvas!','success');updateBadge();}
+function loadConfig(){const r=localStorage.getItem('sc');if(r){CONFIG=JSON.parse(r);document.getElementById('cfg-url').value=CONFIG.scriptUrl||'';document.getElementById('cfg-aba').value=CONFIG.sheetName||'S.I INV.';document.getElementById('cfg-key').value=CONFIG.claudeKey||'';}updateBadge();}
+function updateBadge(){const el=document.getElementById('conn-status'),b=document.getElementById('sync-badge');if(CONFIG.scriptUrl){el.textContent='✓ Conectado';el.style.color='var(--green)';b.className='topbar-badge badge-ok';b.textContent='Conectado';}else{el.textContent='○ Não configurado';el.style.color='var(--text3)';b.className='topbar-badge badge-warn';b.textContent='Configure nas ⚙';}}
 
 // ─── APPS SCRIPT API ──────────────────────────────────────────────────────────
-async function scriptGet() {
-  if (!CONFIG.scriptUrl) throw new Error('URL do Apps Script não configurada');
-  const url = `${CONFIG.scriptUrl}?action=read`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error('Erro HTTP ' + res.status);
-  const data = await res.json();
-  if (data.error) throw new Error(data.error);
-  return data.values || [];
-}
+async function scriptGet(){const r=await fetch(CONFIG.scriptUrl+'?action=read');if(!r.ok)throw new Error('HTTP '+r.status);return(await r.json()).values||[];}
+async function scriptAppend(row){const r=await fetch(CONFIG.scriptUrl+'?action=append',{method:'POST',body:JSON.stringify({row})});if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
+async function scriptUpdate(rowNum,values){const r=await fetch(CONFIG.scriptUrl+'?action=update',{method:'POST',body:JSON.stringify({row:rowNum,values})});if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
 
-async function scriptAppend(row) {
-  if (!CONFIG.scriptUrl) throw new Error('URL do Apps Script não configurada');
-  const res = await fetch(CONFIG.scriptUrl + '?action=append', {
-    method: 'POST',
-    body: JSON.stringify({row})
-  });
-  if (!res.ok) throw new Error('Erro HTTP ' + res.status);
-  return await res.json();
-}
+// ─── REVISÕES (localStorage) ──────────────────────────────────────────────────
+function getRev(){return JSON.parse(localStorage.getItem('sr')||'{}');}
+function setRev(v){localStorage.setItem('sr',JSON.stringify(v));}
+function revKey(d){return d.matricula+'_'+d.ano;}
+function countRev(key){return Object.keys((getRev()[key])||{}).length;}
+function euRevisei(key){return!!(USER&&(getRev()[key]||{})[USER.initials]);}
 
-async function scriptUpdate(rowNum, values) {
-  if (!CONFIG.scriptUrl) throw new Error('URL do Apps Script não configurada');
-  const res = await fetch(CONFIG.scriptUrl + '?action=update', {
-    method: 'POST',
-    body: JSON.stringify({row: rowNum, values})
-  });
-  if (!res.ok) throw new Error('Erro HTTP ' + res.status);
-  return await res.json();
+function marcarRevisao(key,idx){
+  if(!USER)return;
+  const rev=getRev();if(!rev[key])rev[key]={};
+  const hoje=new Date().toLocaleDateString('pt-BR');
+  rev[key][USER.initials]=hoje;setRev(rev);
+  const total=Object.keys(rev[key]).length;
+  if(total>=REVISORES.length){
+    DATA[idx].status='3.5';
+    if(CONFIG.scriptUrl){const d=DATA[idx];const row=buildRow(d);scriptUpdate(d.row,row).catch(()=>{});}
+    toast(`✓ Todos revisaram! ${DATA[idx].matricula} → "Revisada".`,'success');
+  }else{toast(`✓ ${USER.name} confirmou (${total}/${REVISORES.length})`,'success');}
+  renderAll();
 }
 
 // ─── LOAD DATA ────────────────────────────────────────────────────────────────
-async function loadData() {
-  if (!CONFIG.scriptUrl) { toast('Configure a URL do Apps Script primeiro', 'error'); showPanel('config'); return; }
-  toast('Sincronizando...', 'info');
-  try {
-    const rows = await scriptGet();
-    DATA = [];
-    // Pular linhas de cabeçalho (primeiras 4 linhas da planilha original)
-    let dataStart = 0;
-    for (let i = 0; i < rows.length; i++) {
-      if (rows[i][1] && rows[i][1].match(/^[A-Z]{2}-[A-Z]{3}|^[A-Z]{2}-[A-Z]{2}[A-Z0-9]{1}/i)) { dataStart = i; break; }
-    }
-    for (let i = dataStart; i < rows.length; i++) {
-      const r = rows[i];
-      if (!r[1] || r[1].trim() === '') continue;
-      // Extrair ano da matrícula se não houver coluna K
-      const mat = r[1] || '';
-      const anoMatch = mat.match(/\((\d{4})\)/);
-      const anoOcorr = r[11] || (anoMatch ? anoMatch[1] : '');
+function fmtDate(v){if(!v)return'';if(typeof v==='string'&&v.includes('T')){const d=new Date(v);if(!isNaN(d))return d.toLocaleDateString('pt-BR');}return String(v);}
+function g(r,i){return(r[i]||'').toString().trim();}
+
+async function loadData(){
+  if(!CONFIG.scriptUrl){toast('Configure a URL do Apps Script','error');showPanel('config');return;}
+  toast('Sincronizando...','info');
+  try{
+    const rows=await scriptGet();DATA=[];
+    for(let i=0;i<rows.length;i++){
+      const r=rows[i];
+      const mat=g(r,COL.mat);
+      if(!mat||mat==='MATRÍCULA'||!mat.match(/^[A-Z]{2}[-A-Z0-9]/i))continue;
+      const am=mat.match(/\((\d{4})\)/);
       DATA.push({
-        row: i + 1,
-        celula: r[0] || 'SI',
-        matricula: mat.replace(/\s*\(\d{4}\)\s*/, '').trim(),
-        ano: anoMatch ? anoMatch[1] : (r[11] ? r[11].substring(0,4) : ''),
-        resp: r[2] || '',
-        inicio: r[3] || '',
-        prazo: r[4] || '',
-        prior: r[5] || '',
-        checkin: r[6] || '',
-        feito: r[7] || '',
-        acoes: r[8] || '',
-        feedback: r[9] || '',
-        tipo: r[10] || '',
-        dataOcorr: r[11] || '',
-        local: r[12] || '',
-        modelo: r[13] || '',
-        revisor: r[14] || '',
-        dataRevisao: r[15] || '',
-        aprovador: r[16] || '',
-        status: r[17] || inferStatus(r[8] || ''),
-        rai: r[18] || ''
+        row:i+1,
+        celula:g(r,COL.cel)||'SI',
+        matricula:mat.replace(/\s*\(\d{4}\)\s*/,'').trim(),
+        ano:am?am[1]:g(r,COL.ano),
+        tipo:g(r,COL.tipo),
+        dataOco:fmtDate(r[COL.dataOco]),
+        local:g(r,COL.local),
+        uf:g(r,COL.uf),
+        modelo:g(r,COL.modelo),
+        fase:g(r,COL.fase),
+        resp:g(r,COL.resp),
+        inicio:fmtDate(r[COL.inicio]),
+        prazo:fmtDate(r[COL.prazo]),
+        prior:g(r,COL.prior),
+        status:g(r,COL.status)||inferSt(g(r,COL.acoes),g(r,COL.feedback)),
+        pend:g(r,COL.pend),
+        acoes:g(r,COL.acoes),
+        feedback:g(r,COL.feedback),
+        revisoes:g(r,COL.revisoes),
+        aprovador:g(r,COL.aprovador),
+        rai:g(r,COL.rai),
+        cat:g(r,COL.cat),
       });
     }
-    renderStats();
-    renderTable();
-    renderPainelTable();
-    toast(`${DATA.length} ocorrências carregadas`, 'success');
-  } catch(e) {
-    toast('Erro: ' + e.message, 'error');
-    // Fallback mock
-    DATA = getMockData();
-    renderStats();
-    renderTable();
-    renderPainelTable();
-  }
+    renderAll();toast(`${DATA.length} ocorrências carregadas`,'success');
+  }catch(e){toast('Erro: '+e.message,'error');DATA=getMock();renderAll();}
 }
 
-function inferStatus(acoes) {
-  const a = (acoes || '').toUpperCase();
-  if (a.includes('CONCLU') || a.includes('RF EMITIDO')) return '7';
-  if (a.includes('APRECIAÇÃO DO CHEFE') || a.includes('APRECIA')) return '6';
-  if (a.includes('UPLOAD') || a.includes('DÉDALO')) return '5';
-  if (a.includes('REUNIÃO DE LIBERAÇÃO') || a.includes('LIBERACAO')) return '4';
-  if (a.includes('REVISÃO') || a.includes('REVISADO')) return '3';
-  if (a.includes('AGUARDANDO LAUDO') || a.includes('AGUARD')) return '1';
-  return '2';
+function inferSt(a,fb){
+  a=(a||'').toUpperCase();fb=(fb||'').toUpperCase();
+  if('CONCLU'in a||'RF EMITIDO'in a)return'7';
+  if('APRECIAÇÃO'in a||'APRECIA'in a)return'6';
+  if('UPLOAD'in a||'DÉDALO'in a||'DEDALO'in fb)return'5';
+  if('REUNIÃO DE LIBERAÇÃO'in a||'FECHAMENTO'in a)return'4';
+  if('REVISÃO'in a||'REVISADO'in fb||'REVISADA'in fb)return'3';
+  if('AGUARDANDO LAUDO'in a||'AGUARDANDO LAUDO'in fb)return'1';
+  if('AGUARDANDO'in a||'AGUARDANDO'in fb)return'1';
+  return'2';
 }
 
-async function testConnection() {
-  try {
-    toast('Testando conexão...', 'info');
-    const rows = await scriptGet();
-    toast(`Conexão OK! ${rows.length} linhas lidas.`, 'success');
-    updateStatusBadge();
-  } catch(e) {
-    toast('Erro: ' + e.message, 'error');
-  }
-}
+async function testConn(){try{toast('Testando...','info');const r=await scriptGet();toast(`OK! ${r.length} linhas.`,'success');updateBadge();}catch(e){toast('Erro: '+e.message,'error');}}
 
 // ─── RENDER ───────────────────────────────────────────────────────────────────
-function renderStats() {
-  document.getElementById('st-total').textContent = DATA.length;
-  document.getElementById('st-andamento').textContent = DATA.filter(d => ['2','3','4'].includes(d.status)).length;
-  document.getElementById('st-aguardando').textContent = DATA.filter(d => d.status === '1').length;
-  document.getElementById('st-concluidas').textContent = DATA.filter(d => d.status === '7').length;
+function renderAll(){renderStats();renderTable();renderPainelTable();renderRevisao();}
+
+function renderStats(){
+  document.getElementById('st-total').textContent=DATA.length;
+  document.getElementById('st-andamento').textContent=DATA.filter(d=>['2','3','3.5','4'].includes(d.status)).length;
+  document.getElementById('st-aguardando').textContent=DATA.filter(d=>d.status==='1').length;
+  document.getElementById('st-concluidas').textContent=DATA.filter(d=>d.status==='7').length;
 }
 
-function renderPainelTable() {
-  const el = document.getElementById('painel-table');
-  const recent = [...DATA].slice(0, 15);
-  el.innerHTML = buildTableHTML(recent);
+function renderRevisao(){
+  const el=document.getElementById('revisao-lista');
+  const emRev=DATA.map((d,i)=>({...d,_i:i})).filter(d=>d.status==='3'||d.status==='3.5');
+  const pend=emRev.filter(d=>d.status==='3'&&!euRevisei(revKey(d))).length;
+  const badge=document.getElementById('rev-badge');
+  if(pend>0){badge.style.display='inline';badge.textContent=pend;}else{badge.style.display='none';}
+  if(!emRev.length){el.innerHTML='<div class="empty"><p>Nenhuma minuta em revisão no momento.</p></div>';return;}
+  el.innerHTML=emRev.map(d=>buildRevCard(d,d._i)).join('');
 }
 
-function renderTable() {
-  const el = document.getElementById('main-table');
-  let filtered = [...DATA];
-  const inv = document.getElementById('f-investigador').value;
-  const st = document.getElementById('f-status').value;
-  const ano = document.getElementById('f-ano').value;
-  const tipo = document.getElementById('f-tipo').value;
-  if (inv) filtered = filtered.filter(d => d.resp === inv);
-  if (st) filtered = filtered.filter(d => d.status === st);
-  if (ano) filtered = filtered.filter(d => d.ano === ano);
-  if (tipo) filtered = filtered.filter(d => d.tipo === tipo);
-  el.innerHTML = filtered.length ? buildTableHTML(filtered) : '<div class="empty"><div class="empty-icon">🔍</div><p>Nenhuma ocorrência encontrada com os filtros aplicados.</p></div>';
+function buildRevCard(d,idx){
+  const key=revKey(d);const rev=getRev()[key]||{};
+  const total=Object.keys(rev).length;const pct=Math.round(total/REVISORES.length*100);
+  const todos=total>=REVISORES.length;const eu=USER&&rev[USER.initials];
+  const fillColor=todos?'var(--green)':'var(--amber)';
+  const pill=todos?`<span class="pill" style="color:var(--green);background:var(--green-dim);margin-left:auto">Revisada ${total}/${REVISORES.length}</span>`
+    :`<span class="pill" style="color:var(--amber);background:var(--amber-dim);margin-left:auto">Em revisão ${total}/${REVISORES.length}</span>`;
+  const avs=REVISORES.map(r=>{const dt=rev[r]||'';const isEu=USER&&r===USER.initials;const cls=dt?'feito':(isEu?'eu':'pendente');
+    return`<div class="rev-av-wrap"><div class="rev-av ${cls}" title="${REVISOR_NOMES[r]}">${r}</div><div class="rev-av-label">${r}</div><div class="rev-av-data">${dt||'—'}</div></div>`;}).join('');
+  let btn;
+  if(todos)btn=`<button class="btn-revisar todos" disabled>✓ Todos confirmaram — minuta revisada</button>`;
+  else if(eu)btn=`<button class="btn-revisar ja-revisei" disabled>✓ Você revisou em ${rev[USER.initials]}</button>`;
+  else btn=`<button class="btn-revisar pendente-eu" onclick="marcarRevisao('${key}',${idx})">✓ Confirmar que li esta minuta</button>`;
+  const catTag=d.cat?`<span style="font-family:var(--mono);font-size:10px;color:var(--teal);background:var(--teal-dim);padding:2px 7px;border-radius:99px">${d.cat.split(' ')[0]}</span>`:'';
+  return`<div class="rev-section">
+    <div class="rev-header"><div><span class="rev-mat">${d.matricula}</span><span class="rev-meta"> ${d.ano} · ${d.tipo||'—'} · ${d.resp||'—'}</span> ${catTag}</div>${pill}</div>
+    <div class="rev-progress-bar"><div class="rev-progress-fill" style="width:${pct}%;background:${fillColor}"></div></div>
+    <div class="rev-progress-text">${total} de ${REVISORES.length} revisores confirmaram</div>
+    <div class="rev-avatars">${avs}</div>${btn}
+  </div>`;
 }
 
-function buildTableHTML(rows) {
-  const hdrs = ['Matrícula','Tipo','Responsável','Prioridade','Status','Revisão','Ações',''];
-  let html = `<table><thead><tr>${hdrs.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`;
-  for (const d of rows) {
-    const statusLabel = STATUS_LABELS[d.status] || 'Confecção da minuta';
-    const statusCls = `pill pill-${d.status || '2'}`;
-    const priorHtml = d.prior ? `<span class="prio prio-${d.prior}">${d.prior}</span>` : '—';
-    const revisorHtml = d.revisor
-      ? `<div class="revisor-cell"><div class="revisor-avatar">${d.revisor.split(' ').map(w=>w[0]).join('').substring(0,2)}</div>${d.revisor.split(' ').slice(-1)[0]}</div>`
-      : '<span style="color:var(--text3)">—</span>';
-    const acoesShort = (d.acoes || '').length > 45 ? d.acoes.substring(0,45)+'…' : d.acoes;
-    html += `<tr>
-      <td><span class="td-mono" style="color:var(--accent)">${d.matricula}</span> <span style="color:var(--text3);font-size:11px">${d.ano}</span></td>
-      <td style="color:var(--text2);font-size:12px">${d.tipo || '—'}</td>
-      <td>${d.resp || '—'}</td>
-      <td>${priorHtml}</td>
-      <td><span class="${statusCls}">${statusLabel}</span></td>
-      <td>${revisorHtml}</td>
-      <td style="color:var(--text2);font-size:12px;max-width:200px">${acoesShort || '—'}</td>
-      <td><div class="row-actions">
-        <button class="icon-btn" onclick="openModal(${JSON.stringify(d).replace(/"/g,'&quot;')})" title="Editar">
-          <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        </button>
-      </div></td>
+function renderPainelTable(){document.getElementById('painel-table').innerHTML=buildTable(DATA.slice(0,15));}
+
+function renderTable(){
+  let f=[...DATA];
+  const inv=document.getElementById('f-inv').value,st=document.getElementById('f-st').value,ano=document.getElementById('f-ano').value,tipo=document.getElementById('f-tipo').value;
+  if(inv)f=f.filter(d=>d.resp===inv);if(st)f=f.filter(d=>d.status===st);if(ano)f=f.filter(d=>d.ano===ano);if(tipo)f=f.filter(d=>d.tipo===tipo);
+  document.getElementById('main-table').innerHTML=f.length?buildTable(f):'<div class="empty"><p>Nenhuma ocorrência encontrada.</p></div>';
+}
+
+function buildTable(rows){
+  let h=`<table><thead><tr><th>Matrícula</th><th>Ano</th><th>Tipo</th><th>Categoria</th><th>Responsável</th><th>Prior.</th><th>Status</th><th>Laudo</th><th>Revisão</th><th>Ações</th><th></th></tr></thead><tbody>`;
+  for(const d of rows){
+    const key=revKey(d),rc=countRev(key),st=d.status||'2';
+    const stL=STATUS_LABELS[st]||'Confecção da minuta';
+    const stCls=st==='3.5'?'pill pill-35':`pill pill-${st}`;
+    const pr=d.prior?`<span class="prio prio-${d.prior}">${d.prior}</span>`:'—';
+    const rv=(st==='3'||st==='3.5')?`<span style="font-size:11px;color:${st==='3.5'?'var(--green)':'var(--amber)'}">${rc}/${REVISORES.length}</span>`:'<span style="color:var(--text3)">—</span>';
+    const ac=(d.acoes||'').length>35?d.acoes.substring(0,35)+'…':d.acoes;
+    const catShort=d.cat?d.cat.split(' ')[0]:'—';
+    const laudo=(d.pend&&d.pend!=='—')?`<span style="font-size:11px;color:var(--red)">${d.pend}</span>`:'<span style="color:var(--text3)">—</span>';
+    h+=`<tr>
+      <td><span class="td-mono" style="color:var(--accent)">${d.matricula}</span></td>
+      <td style="color:var(--text3);font-size:12px">${d.ano}</td>
+      <td style="color:var(--text2);font-size:12px">${d.tipo||'—'}</td>
+      <td><span style="font-family:var(--mono);font-size:11px;color:var(--teal)">${catShort}</span></td>
+      <td>${d.resp||'—'}</td>
+      <td>${pr}</td>
+      <td><span class="${stCls}">${stL}</span></td>
+      <td>${laudo}</td>
+      <td>${rv}</td>
+      <td style="color:var(--text2);font-size:12px;max-width:160px">${ac||'—'}</td>
+      <td><div class="row-actions"><button class="icon-btn" onclick='openModal(${JSON.stringify(d).replace(/'/g,"&#39;")})' title="Editar"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></div></td>
     </tr>`;
   }
-  html += '</tbody></table>';
-  return html;
+  return h+'</tbody></table>';
 }
 
-function clearFilters() {
-  ['f-investigador','f-status','f-ano','f-tipo'].forEach(id => document.getElementById(id).value = '');
-  renderTable();
+function clearFilters(){['f-inv','f-st','f-ano','f-tipo'].forEach(id=>document.getElementById(id).value='');renderTable();}
+
+// ─── MODAL ────────────────────────────────────────────────────────────────────
+function openModal(d){
+  document.getElementById('modal-title').textContent=`Atualizar — ${d.matricula} (${d.ano})`;
+  document.getElementById('modal-row').value=d.row;
+  document.getElementById('m-st').value=d.status||'2';
+  document.getElementById('m-pend').value=d.pend||'—';
+  document.getElementById('m-cat').value=d.cat||'';
+  document.getElementById('m-acoes').value=d.acoes||'';
+  document.getElementById('m-fb').value=d.feedback||'';
+  document.getElementById('modal-upd').classList.add('open');
+}
+function closeModal(){document.getElementById('modal-upd').classList.remove('open');}
+
+function buildRow(d){
+  // 22 colunas: A(vazia), B..V
+  return ['',d.celula,`${d.matricula} (${d.ano})`,d.resp,d.inicio,d.prazo,d.prior,'','',d.acoes,d.feedback,d.tipo,d.dataOco,d.local+' '+d.uf,d.modelo,d.revisoes,d.aprovador,d.status,d.rai,d.cat,d.pend];
+  // Ordem correta: A,B=cel,C=mat,D=ano?... ajustada abaixo
 }
 
-// ─── MODAL ATUALIZAR ──────────────────────────────────────────────────────────
-function openModal(d) {
-  document.getElementById('modal-mat').textContent = `Atualizar — ${d.matricula} (${d.ano})`;
-  document.getElementById('modal-row').value = d.row;
-  document.getElementById('m-status').value = d.status || '2';
-  document.getElementById('m-revisor').value = d.revisor || '';
-  document.getElementById('m-acoes').value = d.acoes || '';
-  document.getElementById('m-feedback').value = d.feedback || '';
-  document.getElementById('modal-update').classList.add('open');
+function buildSheetRow(d){
+  // Conforme COL: B=cel,C=mat,D=ano,E=tipo,F=dataOco,G=local,H=uf,I=modelo,J=fase,K=resp,L=inicio,M=prazo,N=prior,O=status,P=pend,Q=acoes,R=fb,S=rev,T=aprov,U=rai,V=cat
+  return ['',d.celula,`${d.matricula} (${d.ano})`,d.ano,d.tipo,d.dataOco,d.local,d.uf,d.modelo,d.fase,d.resp,d.inicio,d.prazo,d.prior,d.status,d.pend,d.acoes,d.feedback,d.revisoes,d.aprovador,d.rai,d.cat];
 }
 
-function closeModal() {
-  document.getElementById('modal-update').classList.remove('open');
-}
-
-async function saveUpdate() {
-  const rowNum = parseInt(document.getElementById('modal-row').value);
-  const idx = DATA.findIndex(d => d.row === rowNum);
-  if (idx < 0) return;
-  const d = {...DATA[idx]};
-  d.status = document.getElementById('m-status').value;
-  d.revisor = document.getElementById('m-revisor').value;
-  d.acoes = document.getElementById('m-acoes').value;
-  d.feedback = document.getElementById('m-feedback').value;
-  if (d.revisor && !d.dataRevisao) d.dataRevisao = new Date().toLocaleDateString('pt-BR');
-  DATA[idx] = d;
-  closeModal();
-  renderTable(); renderPainelTable(); renderStats();
-
-  if (CONFIG.scriptUrl) {
-    try {
-      const rowValues = [d.celula,`${d.matricula} (${d.ano})`,d.resp,d.inicio,d.prazo,d.prior,d.checkin,d.feito,d.acoes,d.feedback,d.tipo,d.dataOcorr,d.local,d.modelo,d.revisor,d.dataRevisao,d.aprovador,d.status,d.rai];
-      await scriptUpdate(rowNum, rowValues);
-      toast('Planilha atualizada!', 'success');
-    } catch(e) { toast('Salvo localmente. Erro ao sync: ' + e.message, 'error'); }
-  } else {
-    toast('Atualizado localmente (configure o Apps Script)', 'info');
-  }
+async function saveUpdate(){
+  const rn=parseInt(document.getElementById('modal-row').value);
+  const idx=DATA.findIndex(d=>d.row===rn);if(idx<0)return;
+  const d={...DATA[idx]};
+  d.status=document.getElementById('m-st').value;
+  d.pend=document.getElementById('m-pend').value;
+  d.cat=document.getElementById('m-cat').value;
+  d.acoes=document.getElementById('m-acoes').value;
+  d.feedback=document.getElementById('m-fb').value;
+  DATA[idx]=d;closeModal();renderAll();
+  if(CONFIG.scriptUrl){try{await scriptUpdate(rn,buildSheetRow(d));toast('Planilha atualizada!','success');}catch(e){toast('Local OK. Sync: '+e.message,'error');}}
+  else toast('Atualizado localmente','info');
 }
 
 // ─── NOVA OCORRÊNCIA ──────────────────────────────────────────────────────────
-async function saveNew(e) {
-  e.preventDefault();
-  const btn = document.getElementById('save-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spinner"></div> Salvando...';
-
-  const mat = document.getElementById('n-matricula').value.toUpperCase().trim();
-  const ano = document.getElementById('n-ano').value;
-  const newRow = {
-    row: DATA.length + 10,
-    celula: document.getElementById('n-celula').value,
-    matricula: mat,
-    ano,
-    resp: document.getElementById('n-resp').value,
-    inicio: document.getElementById('n-inicio').value,
-    prazo: document.getElementById('n-prazo').value,
-    prior: document.getElementById('n-prior').value,
-    checkin: 'FALSE',
-    feito: 'FALSE',
-    acoes: document.getElementById('n-acoes').value,
-    feedback: '',
-    tipo: document.getElementById('n-tipo').value,
-    dataOcorr: document.getElementById('n-data-ocorr').value,
-    local: document.getElementById('n-local').value + ' / ' + document.getElementById('n-uf').value,
-    modelo: document.getElementById('n-fabricante').value + ' ' + document.getElementById('n-modelo').value + ' fase: ' + document.getElementById('n-fase').value,
-    revisor: '',
-    dataRevisao: '',
-    aprovador: '',
-    status: document.getElementById('n-status').value,
-    rai: document.getElementById('n-rai').value
-  };
-
-  DATA.push(newRow);
-  renderStats(); renderTable(); renderPainelTable();
-
-  if (CONFIG.scriptUrl) {
-    try {
-      const row = [newRow.celula,`${mat} (${ano})`,newRow.resp,newRow.inicio,newRow.prazo,newRow.prior,'FALSE','FALSE',newRow.acoes,'',newRow.tipo,newRow.dataOcorr,newRow.local,newRow.modelo,'','','',newRow.status,newRow.rai];
-      await scriptAppend(row);
-      toast(`${mat} adicionada à planilha!`, 'success');
-    } catch(e) {
-      toast('Adicionado localmente. Erro sync: ' + e.message, 'error');
-    }
-  } else {
-    toast(`${mat} adicionada localmente`, 'info');
-  }
-
-  btn.disabled = false;
-  btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar na planilha';
-  clearForm();
-  showPanel('ocorrencias');
+async function saveNew(e){
+  e.preventDefault();const btn=document.getElementById('save-btn');btn.disabled=true;
+  const mat=document.getElementById('n-mat').value.toUpperCase().trim();
+  const ano=document.getElementById('n-ano').value;
+  const d={row:DATA.length+10,celula:document.getElementById('n-cel').value,matricula:mat,ano,
+    tipo:document.getElementById('n-tipo').value,cat:document.getElementById('n-cat').value,
+    dataOco:document.getElementById('n-data').value,local:document.getElementById('n-local').value,
+    uf:document.getElementById('n-uf').value,modelo:document.getElementById('n-mod').value,
+    fase:document.getElementById('n-fase').value,resp:document.getElementById('n-resp').value,
+    inicio:document.getElementById('n-inicio').value,prazo:document.getElementById('n-prazo').value,
+    prior:document.getElementById('n-prior').value,status:document.getElementById('n-st').value,
+    pend:document.getElementById('n-pend').value,acoes:document.getElementById('n-acoes').value,
+    feedback:'',revisoes:'',aprovador:'',rai:document.getElementById('n-rai').value};
+  DATA.push(d);renderAll();
+  if(CONFIG.scriptUrl){try{await scriptAppend(buildSheetRow(d));toast(`${mat} adicionada!`,'success');}catch(e){toast('Local OK. Sync: '+e.message,'error');}}
+  else toast(`${mat} adicionada localmente`,'info');
+  btn.disabled=false;clearForm();showPanel('ocorrencias');
 }
-
-function clearForm() {
-  ['n-matricula','n-ano','n-inicio','n-prazo','n-acoes','n-rai','n-fabricante','n-modelo','n-local','n-data-ocorr'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
-  ['n-tipo','n-resp','n-prior','n-status','n-celula','n-uf','n-fase'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.selectedIndex = 0;
-  });
+function clearForm(){
+  ['n-mat','n-ano','n-data','n-local','n-mod','n-acoes','n-rai','n-inicio','n-prazo'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['n-tipo','n-cat','n-uf','n-fase','n-resp','n-prior','n-st','n-cel','n-pend'].forEach(id=>{const el=document.getElementById(id);if(el)el.selectedIndex=0;});
 }
 
 // ─── BUSCA IA ─────────────────────────────────────────────────────────────────
-async function askAI() {
-  const input = document.getElementById('query-input');
-  const q = input.value.trim();
-  if (!q) return;
-  if (!CONFIG.claudeKey) { toast('Configure a chave Claude nas ⚙ Configurações', 'error'); return; }
-  addChat('user', q);
-  input.value = '';
-  const typing = addChat('ai', '', true);
-
-  const dataStr = DATA.map(d =>
-    `[${d.matricula} ${d.ano}] Tipo:${d.tipo||'—'} Resp:${d.resp} Status:${STATUS_LABELS[d.status]||d.status} Prior:${d.prior||'—'} Revisor:${d.revisor||'SEM REVISOR'} Prazo:${d.prazo||'—'} Ações:${d.acoes} Feedback:${d.feedback}`
-  ).join('\n');
-
-  const systemPrompt = `Você é o assistente de investigações do SERIPA-VII (Sétimo Serviço Regional de Investigação e Prevenção de Acidentes Aeronáuticos), da Aviação Civil brasileira.
-Responda em português. Seja preciso, objetivo e use linguagem aeronáutica adequada.
-Contexto: investigações de ocorrências aeronáuticas (acidentes, incidentes graves e incidentes).
+async function askAI(){
+  const inp=document.getElementById('query-input'),q=inp.value.trim();
+  if(!q)return;if(!CONFIG.claudeKey){toast('Configure a chave Claude','error');return;}
+  addChat('user',q);inp.value='';const t=addChat('ai','',true);
+  const rev=getRev();
+  const ds=DATA.map(d=>{
+    const key=revKey(d);const rf=Object.keys(rev[key]||{}).join(',')||'nenhum';
+    return`[${d.matricula} ${d.ano}] Tipo:${d.tipo||'—'} Cat:${d.cat||'—'} Resp:${d.resp} Status:${STATUS_LABELS[d.status]||d.status} Prior:${d.prior||'—'} Laudo:${d.pend||'—'} Revisores:${rf}/${REVISORES.length} Prazo:${d.prazo||'—'} Local:${d.local||'—'} Modelo:${d.modelo||'—'} Ações:${d.acoes}`;
+  }).join('\n');
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':CONFIG.claudeKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,
+        system:`Você é o assistente da Seção de Investigação do SERIPA-VII (Sétimo Serviço Regional de Investigação e Prevenção de Acidentes Aeronáuticos). Responda em português, objetivo e com linguagem aeronáutica adequada.
 Investigadores: CP AVILA, MAJ PABLO, CP CARLOS EDUARDO, CP JAIRO.
-Status possíveis: 1=Aguardando laudo externo, 2=Confecção da minuta, 3=Revisão interna, 4=Aguardando reunião de liberação, 5=Upload no Dédalo, 6=Apreciação do chefe, 7=Concluído.
+Revisores: PBO(Maj Pablo), CEO(Cp C.Eduardo), RAV(Cp Ávila), JON, MAT, EMI. Quórum: todos os 6 devem confirmar.
+Status: 1=Aguardando laudo técnico, 2=Confecção da minuta, 3=Em revisão (parcial), 3.5=Revisada (todos confirmaram), 4=Aguard.reunião liberação, 5=Upload Dédalo, 6=Apreciação chefe, 7=Concluído/RF emitido.
+Categorias SIPAER conforme MCA 3-6/2017: CFIT, LOC-I, LOC-G, SCF-PP, SCF-NP, FUEL, BIRD, WILD, LALT, CTOL, ARC, USOS, UIMC, RI, TURB, WSTRW, ICE, F-NI, F-POST, CABIN, EVAC, MAC, GCOL, RAMP, EXTL, ADRM, MED, OTHR.
 Data atual: ${new Date().toLocaleDateString('pt-BR')}.
+Briefing quinzenal: resuma o estado geral, destaque prioridades 1, ocorrências em atraso, minutas em revisão e próximas etapas por investigador.
 
-DADOS ATUAIS DA PLANILHA:
-${dataStr || 'Nenhum dado carregado. Sugira sincronizar nas configurações.'}`;
-
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': CONFIG.claudeKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1024,
-        system: systemPrompt,
-        messages: [{role:'user', content: q}]
-      })
-    });
-    const data = await res.json();
-    typing.classList.remove('typing');
-    if (data.content?.[0]?.text) {
-      typing.textContent = data.content[0].text;
-    } else if (data.error) {
-      typing.textContent = 'Erro: ' + (data.error.message || JSON.stringify(data.error));
-    }
-  } catch(err) {
-    typing.classList.remove('typing');
-    typing.textContent = 'Erro de conexão: ' + err.message;
-  }
+DADOS ATUAIS:
+${ds||'Nenhum dado. Sincronize primeiro.'}`,
+        messages:[{role:'user',content:q}]})});
+    const data=await res.json();t.classList.remove('typing');
+    t.textContent=data.content?.[0]?.text||('Erro: '+JSON.stringify(data.error));
+  }catch(err){t.classList.remove('typing');t.textContent='Erro: '+err.message;}
 }
-
-function quickQuery(q) {
-  document.getElementById('query-input').value = q;
-  showPanel('busca');
-  askAI();
-}
-
-function addChat(role, text, typing=false) {
-  const area = document.getElementById('chat-area');
-  const msg = document.createElement('div');
-  msg.className = 'chat-msg';
-  const av = document.createElement('div');
-  av.className = `chat-avatar ${role==='user'?'avatar-user':'avatar-ai'}`;
-  av.textContent = role === 'user' ? 'SI' : 'IA';
-  const bubble = document.createElement('div');
-  bubble.className = `chat-bubble${role==='user'?' user':''}${typing?' typing':''}`;
-  bubble.textContent = text;
-  msg.appendChild(av);
-  msg.appendChild(bubble);
-  area.appendChild(msg);
-  area.scrollTop = area.scrollHeight;
-  return bubble;
+function quickQuery(q){document.getElementById('query-input').value=q;showPanel('busca');askAI();}
+function addChat(role,text,typing=false){
+  const area=document.getElementById('chat-area'),msg=document.createElement('div');msg.className='chat-msg';
+  const av=document.createElement('div');av.className=`chat-avatar ${role==='user'?'avatar-user':'avatar-ai'}`;av.textContent=role==='user'?(USER?.initials||'SI'):'IA';
+  const b=document.createElement('div');b.className=`chat-bubble${role==='user'?' user':''}${typing?' typing':''}`;b.textContent=text;
+  msg.appendChild(av);msg.appendChild(b);area.appendChild(msg);area.scrollTop=area.scrollHeight;return b;
 }
 
 // ─── NAV ──────────────────────────────────────────────────────────────────────
-function showPanel(name) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('panel-' + name).classList.add('active');
-  document.getElementById('nav-' + name)?.classList.add('active');
+function showPanel(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  document.getElementById('nav-'+name)?.classList.add('active');
+  if(name==='revisao')renderRevisao();
 }
 
 // ─── TOAST ────────────────────────────────────────────────────────────────────
-function toast(msg, type='info') {
-  const c = document.getElementById('toasts');
-  const t = document.createElement('div');
-  t.className = `toast ${type}`;
-  t.textContent = msg;
-  c.appendChild(t);
-  setTimeout(() => t.remove(), 3500);
-}
+function toast(msg,type='info'){const c=document.getElementById('toasts'),t=document.createElement('div');t.className=`toast ${type}`;t.textContent=msg;c.appendChild(t);setTimeout(()=>t.remove(),3500);}
 
-// ─── MOCK DATA ────────────────────────────────────────────────────────────────
-function getMockData() {
-  return [
-    {row:5,celula:'SI',matricula:'PR-FDL',ano:'2023',resp:'CP AVILA',inicio:'',prazo:'',prior:'1',checkin:'TRUE',feito:'FALSE',acoes:'LAUDO RECEBIDO - MINUTA EM CONFECÇÃO',feedback:'',tipo:'Acidente',dataOcorr:'',local:'',modelo:'',revisor:'',dataRevisao:'',aprovador:'',status:'2',rai:''},
-    {row:6,celula:'SI',matricula:'PT-NLE',ano:'2023',resp:'MAJ PABLO',inicio:'',prazo:'',prior:'2',checkin:'TRUE',feito:'FALSE',acoes:'FORMATAÇÃO E UPLOAD NO DÉDALO',feedback:'REUNIÃO REALIZADA EM 06/01',tipo:'Incidente Grave',dataOcorr:'',local:'',modelo:'',revisor:'CP AVILA',dataRevisao:'10/01/2025',aprovador:'',status:'5',rai:''},
-    {row:7,celula:'SI',matricula:'PT-UKK',ano:'2023',resp:'MAJ PABLO',inicio:'',prazo:'',prior:'2',checkin:'TRUE',feito:'FALSE',acoes:'FALTANDO REALIZAR REUNIÃO DE LIBERAÇÃO DE MINUTA',feedback:'',tipo:'Acidente',dataOcorr:'05jun2023',local:'HUMAITÁ / AM',modelo:'NEIVA BEM-202',revisor:'',dataRevisao:'',aprovador:'',status:'4',rai:''},
-    {row:8,celula:'SI',matricula:'PR-ITE',ano:'2023',resp:'MAJ PABLO',inicio:'',prazo:'',prior:'1',checkin:'TRUE',feito:'FALSE',acoes:'FINALIZAR A MINUTA DO RF',feedback:'AGUARDANDO LAUDO DO DCTA',tipo:'Incidente Grave',dataOcorr:'',local:'',modelo:'',revisor:'',dataRevisao:'',aprovador:'',status:'1',rai:''},
-    {row:9,celula:'SI',matricula:'PT-MEE',ano:'2023',resp:'CP AVILA',inicio:'',prazo:'',prior:'3',checkin:'TRUE',feito:'FALSE',acoes:'FINALIZANDO MINUTA',feedback:'AGUARDANDO LAUDO DO DCTA',tipo:'Incidente',dataOcorr:'',local:'',modelo:'',revisor:'',dataRevisao:'',aprovador:'',status:'1',rai:''},
-    {row:10,celula:'SI',matricula:'PT-OCV',ano:'2023',resp:'CP CARLOS EDUARDO',inicio:'',prazo:'',prior:'2',checkin:'TRUE',feito:'FALSE',acoes:'FALTANDO REUNIÃO DE LIBERAÇÃO DE MINUTA',feedback:'UPLOAD DÉDALO REALIZADO',tipo:'Incidente',dataOcorr:'',local:'',modelo:'',revisor:'MAJ PABLO',dataRevisao:'15/01/2025',aprovador:'',status:'4',rai:''},
-    {row:11,celula:'SI',matricula:'PP-SKT',ano:'2024',resp:'CP CARLOS EDUARDO',inicio:'',prazo:'',prior:'',checkin:'TRUE',feito:'FALSE',acoes:'ULTIMA REVISAO E APRECIAÇÃO DO CHEFE',feedback:'MINUTA REVISADA NO DRIVE',tipo:'Acidente',dataOcorr:'',local:'',modelo:'',revisor:'CP AVILA',dataRevisao:'03/02/2025',aprovador:'',status:'6',rai:''},
-    {row:12,celula:'SI',matricula:'PT-JUN',ano:'2024',resp:'CP AVILA',inicio:'',prazo:'',prior:'1',checkin:'TRUE',feito:'FALSE',acoes:'Finalizando a minuta',feedback:'',tipo:'Acidente',dataOcorr:'',local:'',modelo:'',revisor:'',dataRevisao:'',aprovador:'',status:'2',rai:''},
-    {row:13,celula:'SI',matricula:'PT-MEV',ano:'2025',resp:'CP CARLOS EDUARDO',inicio:'',prazo:'',prior:'1',checkin:'TRUE',feito:'FALSE',acoes:'VERIFICANDO OFICINA HOMOLOGADA PARA TESTE E PESQUISA',feedback:'RAI AUTENTICADO 27/02/2025',tipo:'Incidente Grave',dataOcorr:'',local:'',modelo:'',revisor:'',dataRevisao:'',aprovador:'',status:'1',rai:'RAI autenticado 27/02/2025'},
-    {row:14,celula:'SI',matricula:'PP-IVO',ano:'2025',resp:'CP AVILA',inicio:'',prazo:'',prior:'',checkin:'FALSE',feito:'FALSE',acoes:'CONFECÇÃO DA MINUTA',feedback:'AGUARDANDO LAUDO SAFRAN/DCTA',tipo:'Acidente',dataOcorr:'',local:'',modelo:'',revisor:'',dataRevisao:'',aprovador:'',status:'1',rai:''},
-    {row:15,celula:'SI',matricula:'PT-OJA',ano:'2025',resp:'MAJ PABLO',inicio:'',prazo:'',prior:'',checkin:'FALSE',feito:'FALSE',acoes:'CONFECÇÃO DA MINUTA',feedback:'AGUARDANDO REALIZAÇÃO DE EXAME NO DCTA',tipo:'Incidente',dataOcorr:'',local:'',modelo:'',revisor:'',dataRevisao:'',aprovador:'',status:'1',rai:''},
-    {row:16,celula:'SI',matricula:'PS-SLM',ano:'2025',resp:'CP CARLOS EDUARDO',inicio:'',prazo:'',prior:'',checkin:'FALSE',feito:'FALSE',acoes:'CONFECÇÃO DA MINUTA',feedback:'AGUARDANDO LAUDO DCTA',tipo:'Incidente',dataOcorr:'',local:'',modelo:'',revisor:'',dataRevisao:'',aprovador:'',status:'1',rai:''},
-    {row:17,celula:'SI',matricula:'PT-VMG',ano:'2026',resp:'CP CARLOS EDUARDO',inicio:'',prazo:'',prior:'',checkin:'FALSE',feito:'FALSE',acoes:'CONFECÇÃO DA MINUTA',feedback:'',tipo:'',dataOcorr:'',local:'',modelo:'',revisor:'',dataRevisao:'',aprovador:'',status:'2',rai:''},
-  ];
-}
+// ─── MOCK ─────────────────────────────────────────────────────────────────────
+function getMock(){return[
+  {row:10,celula:'SI',matricula:'PR-FDL',ano:'2023',tipo:'Acidente',cat:'SCF-PP - Falha sistema/componente (motor)',dataOco:'',local:'',uf:'',modelo:'',fase:'',resp:'CP AVILA',inicio:'06/01/2026',prazo:'23/01/2026',prior:'1',status:'2',pend:'—',acoes:'LAUDO RECEBIDO - MINUTA EM CONFECÇÃO',feedback:'',revisoes:'',aprovador:'',rai:''},
+  {row:11,celula:'SI',matricula:'PT-NLE',ano:'2023',tipo:'Incidente Grave',cat:'LOC-I - Perda de controle em voo',dataOco:'',local:'',uf:'',modelo:'',fase:'',resp:'MAJ PABLO',inicio:'06/01/2026',prazo:'30/01/2026',prior:'2',status:'3',pend:'—',acoes:'UPLOAD NO DÉDALO',feedback:'REUNIÃO REALIZADA EM 06/01',revisoes:'',aprovador:'',rai:''},
+  {row:12,celula:'SI',matricula:'PT-UKK',ano:'2023',tipo:'Acidente',cat:'LALT - Operação a baixa altitude',dataOco:'05/06/2023',local:'HUMAITÁ',uf:'AM',modelo:'NEIVA BEM-202',fase:'Aplicação agrícola',resp:'MAJ PABLO',inicio:'06/01/2026',prazo:'30/01/2026',prior:'2',status:'3',pend:'—',acoes:'FALTANDO REUNIÃO DE LIBERAÇÃO',feedback:'',revisoes:'',aprovador:'',rai:''},
+  {row:13,celula:'SI',matricula:'PR-ITE',ano:'2023',tipo:'Incidente Grave',cat:'SCF-PP - Falha sistema/componente (motor)',dataOco:'',local:'',uf:'',modelo:'',fase:'',resp:'MAJ PABLO',inicio:'',prazo:'',prior:'1',status:'1',pend:'DCTA',acoes:'FINALIZAR A MINUTA DO RF',feedback:'AGUARDANDO LAUDO DO DCTA',revisoes:'',aprovador:'',rai:''},
+  {row:14,celula:'SI',matricula:'PT-MEE',ano:'2023',tipo:'Incidente',cat:'',dataOco:'',local:'',uf:'',modelo:'',fase:'',resp:'CP AVILA',inicio:'',prazo:'',prior:'3',status:'1',pend:'DCTA',acoes:'FINALIZANDO MINUTA',feedback:'AGUARDANDO LAUDO DO DCTA',revisoes:'',aprovador:'',rai:''},
+  {row:15,celula:'SI',matricula:'PT-XCG',ano:'2024',tipo:'Incidente',cat:'SCF-NP - Falha sistema/componente (não motor)',dataOco:'',local:'',uf:'',modelo:'',fase:'',resp:'CP CARLOS EDUARDO',inicio:'',prazo:'',prior:'',status:'1',pend:'AMR - DCTA',acoes:'Trem de pouso em Teste/Pesquisa no DCTA',feedback:'Ensaios no AMR - DCTA',revisoes:'',aprovador:'',rai:''},
+  {row:16,celula:'SI',matricula:'PP-SKT',ano:'2024',tipo:'Acidente',cat:'ARC - Contato anormal com pista',dataOco:'',local:'',uf:'',modelo:'',fase:'Pouso',resp:'CP CARLOS EDUARDO',inicio:'17/11/2025',prazo:'21/11/2025',prior:'',status:'6',pend:'—',acoes:'APRECIAÇÃO DO CHEFE',feedback:'JON: MINUTA REVISADA NO DRIVE.',revisoes:'',aprovador:'',rai:''},
+  {row:17,celula:'SI',matricula:'PT-MEV',ano:'2025',tipo:'Incidente Grave',cat:'SCF-PP - Falha sistema/componente (motor)',dataOco:'',local:'',uf:'',modelo:'',fase:'',resp:'CP CARLOS EDUARDO',inicio:'06/02/2025',prazo:'05/03/2025',prior:'1',status:'1',pend:'SAFRAN',acoes:'VERIFICANDO OFICINA HOMOLOGADA',feedback:'RAI AUTENTICADO 27/02/2025',revisoes:'',aprovador:'',rai:'RAI 27/02/2025'},
+  {row:18,celula:'SI',matricula:'PP-IVO',ano:'2025',tipo:'Acidente',cat:'',dataOco:'',local:'',uf:'',modelo:'',fase:'',resp:'CP AVILA',inicio:'06/01/2026',prazo:'01/10/2026',prior:'',status:'1',pend:'SAFRAN',acoes:'CONFECÇÃO DA MINUTA',feedback:'AGUARDANDO LAUDO SAFRAN/DCTA',revisoes:'',aprovador:'',rai:''},
+  {row:19,celula:'SI',matricula:'PT-VMG',ano:'2026',tipo:'',cat:'',dataOco:'',local:'',uf:'',modelo:'',fase:'',resp:'CP CARLOS EDUARDO',inicio:'',prazo:'',prior:'',status:'2',pend:'—',acoes:'CONFECÇÃO DA MINUTA',feedback:'',revisoes:'',aprovador:'',rai:''},
+];}
 </script>
 </body>
 </html>
