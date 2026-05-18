@@ -459,6 +459,15 @@
     <div class="modal-title" id="modal-title">Atualizar ocorrência</div>
     <input type="hidden" id="modal-row">
     <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="field"><label>Tipo de ocorrência</label>
+        <select id="m-tipo">
+          <option value="">— Selecione —</option>
+          <option>Acidente</option>
+          <option>Incidente Grave</option>
+          <option>Incidente</option>
+          <option>Ocorrência de Solo</option>
+        </select>
+      </div>
       <div class="field"><label>Status</label>
         <select id="m-st">
           <option value="1">1 — Aguardando laudo técnico</option>
@@ -513,6 +522,10 @@ const STATUS_LABELS = {
 };
 // Mapeamento de colunas (índice 0 = col A)
 // B=1,C=2,D=3,E=4,F=5,G=6,H=7,I=8,J=9,K=10,L=11,M=12,N=13,O=14,P=15,Q=16,R=17,S=18,T=19,U=20,V=21
+// Mapeamento correto conforme planilha Google Sheets (índice base 0: A=0, B=1, C=2...)
+// B=CÉLULA, C=MATRÍCULA, D=ANO, E=TIPO, F=DATA OCO, G=LOCAL, H=UF, I=MODELO
+// J=FASE, K=RESPONSÁVEL, L=INÍCIO, M=PRAZO, N=PRIOR, O=STATUS
+// P=AGUARD.LAUDO, Q=AÇÕES, R=FEEDBACK, S=REVISÕES, T=APROVADOR, U=RAI, V=CATEGORIA
 const COL = {cel:1,mat:2,ano:3,tipo:4,dataOco:5,local:6,uf:7,modelo:8,fase:9,resp:10,inicio:11,prazo:12,prior:13,status:14,pend:15,acoes:16,feedback:17,revisoes:18,aprovador:19,rai:20,cat:21};
 
 let DATA=[], CONFIG={}, USER=null, SEL_USER=null;
@@ -568,19 +581,37 @@ async function loadData(){
       try{
         const r=rows[i];
         const mat=(r[COL.mat]||'').toString().trim();
-        // Ignora linhas vazias e cabeçalhos — cabeçalho tem "MATRÍCULA" na col C (índice 2)
+        // Ignora linhas vazias
         if(!mat||mat.length<2)continue;
-        // Se a célula de responsável contém "RESP" ou "RESPONSÁVEL" é cabeçalho
+        // Ignora linhas de cabeçalho e título — detecta por múltiplos critérios
+        const matUp=mat.toUpperCase();
+        if(matUp.includes('MATRÍCULA')||matUp.includes('MATRICULA'))continue;
+        if(matUp.includes('SERIPA')||matUp.includes('SEÇÃO')||matUp.includes('BRIEFING'))continue;
+        if(matUp.includes('COMANDO')||matUp.includes('AERONÁUTICA'))continue;
+        // Ignora datas ISO (2026-05-18T...)
+        if(mat.match(/^\d{4}-\d{2}-\d{2}T/))continue;
+        // Ignora se responsável é texto de cabeçalho
         const respVal=(r[COL.resp]||'').toString().toUpperCase().trim();
-        if(respVal==='RESP'||respVal==='RESPONSÁVEL'||respVal==='RESPONSIBLE')continue;
-        // Ignora linhas de título da planilha
-        if(mat.toUpperCase().includes('SEÇÃO')||mat.toUpperCase().includes('BRIEFING')||mat.toUpperCase().includes('SERIPA-VII'))continue;
+        if(respVal==='RESP'||respVal==='RESPONSÁVEL'||respVal==='INÍCIO'||respVal==='FEEDBACK')continue;
         const am=mat.match(/\((\d{4})\)/);
         const stRaw=(r[COL.status]||'').toString().trim();
-        const stNum=stRaw.replace(/[^0-9\.]/g,'').substring(0,3);
+        // Extrai o número do status — suporta "2", "2 — Texto", texto puro
+        let stNum='';
+        const stMatch=stRaw.match(/^([0-9]+(?:\.[0-9]+)?)/);
+        if(stMatch) stNum=stMatch[1];
+        // Se não achou número, tenta mapear pelo texto
+        if(!stNum){
+          const stUp=stRaw.toUpperCase();
+          if(stUp.includes('MINUTA AUTENTICADA'))stNum='7';
+          else if(stUp.includes('UPLOAD')||stUp.includes('DÉDALO')||stUp.includes('DEDALO'))stNum='6';
+          else if(stUp.includes('APRECIAÇ')||stUp.includes('APRECIA'))stNum='5';
+          else if(stUp.includes('REUNIÃO')||stUp.includes('LIBERAÇ')||stUp.includes('FECHAMENTO'))stNum='4';
+          else if(stUp.includes('REVIS'))stNum='3';
+          else if(stUp.includes('CONCLU')||stUp.includes('RF EMITIDO'))stNum='7';
+        }
         const status=stNum||inferSt((r[COL.acoes]||'').toString(),(r[COL.feedback]||'').toString());
         DATA.push({
-          row:i+1,
+          row:i+1+9, // +9 porque o script retorna a partir da linha 10 (pula cabeçalho)
           celula:(r[COL.cel]||'SI').toString().trim(),
           matricula:mat.replace(/\s*\(\d{4}\)\s*/,'').trim(),
           ano:am?am[1]:(r[COL.ano]||'').toString().trim(),
@@ -678,8 +709,9 @@ function buildTable(rows){
   let h=`<table><thead><tr><th>Matrícula</th><th>Ano</th><th>Tipo</th><th>Categoria</th><th>Responsável</th><th>Prior.</th><th>Status</th><th>Laudo</th><th>Revisão</th><th>Ações</th><th></th></tr></thead><tbody>`;
   for(const d of rows){
     const key=revKey(d),rc=countRev(key),st=d.status||'2';
-    const stL=STATUS_LABELS[st]||'Confecção da minuta';
-    const stCls=st==='3.5'?'pill pill-35':`pill pill-${st}`;
+    const stL=STATUS_LABELS[st]||STATUS_LABELS['2'];
+    const stNum=st.replace('.','');
+    const stCls=st==='3.5'?'pill pill-35':`pill pill-${stNum}`;
     const pr=d.prior?`<span class="prio prio-${d.prior}">${d.prior}</span>`:'—';
     const rv=(st==='3'||st==='3.5')?`<span style="font-size:11px;color:${st==='3.5'?'var(--green)':'var(--amber)'}">${rc}/${REVISORES.length}</span>`:'<span style="color:var(--text3)">—</span>';
     const ac=(d.acoes||'').length>35?d.acoes.substring(0,35)+'…':d.acoes;
@@ -708,6 +740,7 @@ function clearFilters(){['f-inv','f-st','f-ano','f-tipo'].forEach(id=>document.g
 function openModal(d){
   document.getElementById('modal-title').textContent=`Atualizar — ${d.matricula} (${d.ano})`;
   document.getElementById('modal-row').value=d.row;
+  document.getElementById('m-tipo').value=d.tipo||'';
   document.getElementById('m-st').value=d.status||'2';
   document.getElementById('m-pend').value=d.pend||'—';
   document.getElementById('m-cat').value=d.cat||'';
@@ -732,14 +765,20 @@ async function saveUpdate(){
   const rn=parseInt(document.getElementById('modal-row').value);
   const idx=DATA.findIndex(d=>d.row===rn);if(idx<0)return;
   const d={...DATA[idx]};
+  d.tipo=document.getElementById('m-tipo').value||d.tipo;
   d.status=document.getElementById('m-st').value;
   d.pend=document.getElementById('m-pend').value;
   d.cat=document.getElementById('m-cat').value;
   d.acoes=document.getElementById('m-acoes').value;
   d.feedback=document.getElementById('m-fb').value;
   DATA[idx]=d;closeModal();renderAll();
-  if(CONFIG.scriptUrl){try{await scriptUpdate(rn,buildSheetRow(d));toast('Planilha atualizada!','success');}catch(e){toast('Local OK. Sync: '+e.message,'error');}}
-  else toast('Atualizado localmente','info');
+  if(CONFIG.scriptUrl){
+    try{
+      const result = await scriptUpdate(rn,buildSheetRow(d));
+      if(result && result.error) toast('Erro: '+result.error,'error');
+      else toast('Planilha atualizada! Linha '+rn,'success');
+    }catch(e){toast('Erro ao salvar: '+e.message,'error');}
+  } else toast('Atualizado localmente','info');
 }
 
 // ─── NOVA OCORRÊNCIA ──────────────────────────────────────────────────────────
