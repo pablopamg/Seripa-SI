@@ -200,9 +200,7 @@
         <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Revisar minutas
         <span class="rev-badge" id="rev-badge"></span>
       </button>
-      <button class="nav-item" onclick="showPanel('busca')" id="nav-busca">
-        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Busca IA
-      </button>
+
       <button class="nav-item" onclick="showPanel('ocorrencias')" id="nav-ocorrencias">
         <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Ocorrências
       </button>
@@ -256,35 +254,6 @@
       </div>
     </div>
 
-    <!-- BUSCA IA -->
-    <div id="panel-busca" class="panel">
-      <div class="topbar"><div class="topbar-title">Busca com IA</div><span class="topbar-badge badge-info">Claude Sonnet</span></div>
-      <div class="content">
-        <div class="chat-area" id="chat-area">
-          <div class="chat-msg">
-            <div class="chat-avatar avatar-ai">IA</div>
-            <div class="chat-bubble">Olá! Consulte as investigações em linguagem natural:<br><br>• "Quais investigações do Maj Pablo estão em atraso?"<br>• "Quantas aguardam laudo do DCTA?"<br>• "Minutas CFIT em revisão"<br>• "Gere o briefing quinzenal da SI"<br>• "Status das revisões em andamento"</div>
-          </div>
-        </div>
-        <div style="display:flex;gap:8px;margin-bottom:12px">
-          <div class="search-box" style="flex:1">
-            <svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input type="text" id="query-input" placeholder="Digite sua pergunta sobre as investigações..." onkeydown="if(event.key==='Enter')askAI()">
-          </div>
-          <button class="btn btn-primary" onclick="askAI()">
-            <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Enviar
-          </button>
-        </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="btn btn-ghost btn-sm" onclick="quickQuery('Liste as investigações com prazo vencido ou sem prazo definido')">⚠️ Prazos vencidos</button>
-          <button class="btn btn-ghost btn-sm" onclick="quickQuery('Quais aguardam laudo técnico e de qual órgão?')">⏳ Aguardando laudo</button>
-          <button class="btn btn-ghost btn-sm" onclick="quickQuery('Gere o briefing quinzenal completo da SI com status de cada investigação')">📋 Briefing quinzenal</button>
-          <button class="btn btn-ghost btn-sm" onclick="quickQuery('Status das minutas em revisão e quantos revisores já confirmaram cada uma')">👁 Status revisões</button>
-          <button class="btn btn-ghost btn-sm" onclick="quickQuery('Mostre as ocorrências de prioridade 1 em andamento')">🔴 Prioridade 1</button>
-          <button class="btn btn-ghost btn-sm" onclick="quickQuery('Quais são as categorias SIPAER das ocorrências registradas?')">📊 Por categoria</button>
-        </div>
-      </div>
-    </div>
 
     <!-- OCORRÊNCIAS -->
     <div id="panel-ocorrencias" class="panel">
@@ -420,15 +389,11 @@
       <div class="topbar"><div class="topbar-title">Configurações</div></div>
       <div class="content" style="max-width:700px">
         <div class="form-section">
-          <div class="form-section-title">Google Apps Script</div>
+          <div class="form-section-title">Configuração da planilha</div>
           <div style="display:flex;flex-direction:column;gap:14px">
-            <div class="field"><label>URL do Apps Script</label><input type="text" id="cfg-url" placeholder="https://script.google.com/macros/s/.../exec"><div class="hint">URL gerada ao implantar o Apps Script como App da Web.</div></div>
             <div class="field"><label>Nome da aba</label><input type="text" id="cfg-aba" value="S.I INV."></div>
+            <div class="hint" style="padding:8px 0">🔗 Conectado ao Apps Script do SERIPA-VII automaticamente.</div>
           </div>
-        </div>
-        <div class="form-section">
-          <div class="form-section-title">API Claude (Anthropic)</div>
-          <div class="field"><label>Chave de API</label><input type="password" id="cfg-key" placeholder="sk-ant-..."><div class="hint">Obtenha em console.anthropic.com</div></div>
         </div>
         <div style="display:flex;gap:8px">
           <button class="btn btn-primary" onclick="saveConfig()">
@@ -529,6 +494,7 @@ const STATUS_LABELS = {
 const COL = {cel:1,mat:2,ano:3,tipo:4,dataOco:5,local:6,uf:7,modelo:8,fase:9,resp:10,inicio:11,prazo:12,prior:13,status:14,pend:15,acoes:16,feedback:17,revisoes:18,aprovador:19,rai:20,cat:21};
 
 let DATA=[], CONFIG={}, USER=null, SEL_USER=null;
+const SCRIPT_URL_FIXO = 'https://script.google.com/macros/s/AKfycbzSTzz0eWcIwu1mBUJi4Yb3CDa6KEjkxf6jSb-zTgwbzaorF2LG1lMcIbMbLYkHvJIn/exec';
 
 // ─── LOGIN ────────────────────────────────────────────────────────────────────
 function selUser(ini,nome){SEL_USER={initials:ini,name:nome};document.querySelectorAll('.login-btn').forEach(b=>b.classList.remove('selected'));document.getElementById('lu-'+ini).classList.add('selected');}
@@ -538,12 +504,25 @@ window.onload=()=>{const s=sessionStorage.getItem('su');if(s){USER=JSON.parse(s)
 function init(){loadConfig();if(!CONFIG.scriptUrl){DATA=getMock();renderAll();}else loadData();}
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
-function saveConfig(){CONFIG={scriptUrl:document.getElementById('cfg-url').value.trim(),sheetName:document.getElementById('cfg-aba').value.trim()||'S.I INV.',claudeKey:document.getElementById('cfg-key').value.trim()};localStorage.setItem('sc',JSON.stringify(CONFIG));toast('Configurações salvas!','success');updateBadge();}
-function loadConfig(){const r=localStorage.getItem('sc');if(r){CONFIG=JSON.parse(r);document.getElementById('cfg-url').value=CONFIG.scriptUrl||'';document.getElementById('cfg-aba').value=CONFIG.sheetName||'S.I INV.';document.getElementById('cfg-key').value=CONFIG.claudeKey||'';}updateBadge();}
+function saveConfig(){CONFIG.scriptUrl=SCRIPT_URL_FIXO;CONFIG.sheetName=document.getElementById('cfg-aba').value.trim()||'S.I INV.';localStorage.setItem('sc',JSON.stringify(CONFIG));toast('Configurações salvas!','success');updateBadge();}
+function loadConfig(){const r=localStorage.getItem('sc');if(r){CONFIG=JSON.parse(r);}CONFIG.scriptUrl=SCRIPT_URL_FIXO;CONFIG.sheetName=CONFIG.sheetName||'S.I INV.';updateBadge();}
 function updateBadge(){const el=document.getElementById('conn-status'),b=document.getElementById('sync-badge');if(CONFIG.scriptUrl){el.textContent='✓ Conectado';el.style.color='var(--green)';b.className='topbar-badge badge-ok';b.textContent='Conectado';}else{el.textContent='○ Não configurado';el.style.color='var(--text3)';b.className='topbar-badge badge-warn';b.textContent='Configure nas ⚙';}}
 
 // ─── APPS SCRIPT API ──────────────────────────────────────────────────────────
-async function scriptGet(){const r=await fetch(CONFIG.scriptUrl+'?action=read');if(!r.ok)throw new Error('HTTP '+r.status);return(await r.json()).values||[];}
+async function scriptGet(){
+  const r=await fetch(CONFIG.scriptUrl+'?action=read');
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  const json=await r.json();
+  if(json.error)throw new Error(json.error);
+  // Novo formato: [{rowNum, values}] — extrai com número real de linha
+  const raw=json.values||[];
+  if(raw.length>0 && raw[0].rowNum!==undefined){
+    // Formato novo com rowNum embutido
+    return raw.map(item=>({rowNum:item.rowNum, row:item.values}));
+  }
+  // Formato antigo (array simples) — compatibilidade
+  return raw.map((row,i)=>({rowNum:i+10, row}));
+}
 async function scriptAppend(row){const r=await fetch(CONFIG.scriptUrl+'?action=append',{method:'POST',body:JSON.stringify({row})});if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
 async function scriptUpdate(rowNum,values){const r=await fetch(CONFIG.scriptUrl+'?action=update',{method:'POST',body:JSON.stringify({row:rowNum,values})});if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
 
@@ -579,20 +558,14 @@ async function loadData(){
     const rows=await scriptGet();DATA=[];
     for(let i=0;i<rows.length;i++){
       try{
-        const r=rows[i];
+        const entry=rows[i];
+        const rowNum=entry.rowNum;
+        const r=entry.row||entry;
         const mat=(r[COL.mat]||'').toString().trim();
         // Ignora linhas vazias
         if(!mat||mat.length<2)continue;
-        // Ignora linhas de cabeçalho e título — detecta por múltiplos critérios
-        const matUp=mat.toUpperCase();
-        if(matUp.includes('MATRÍCULA')||matUp.includes('MATRICULA'))continue;
-        if(matUp.includes('SERIPA')||matUp.includes('SEÇÃO')||matUp.includes('BRIEFING'))continue;
-        if(matUp.includes('COMANDO')||matUp.includes('AERONÁUTICA'))continue;
         // Ignora datas ISO (2026-05-18T...)
         if(mat.match(/^\d{4}-\d{2}-\d{2}T/))continue;
-        // Ignora se responsável é texto de cabeçalho
-        const respVal=(r[COL.resp]||'').toString().toUpperCase().trim();
-        if(respVal==='RESP'||respVal==='RESPONSÁVEL'||respVal==='INÍCIO'||respVal==='FEEDBACK')continue;
         const am=mat.match(/\((\d{4})\)/);
         const stRaw=(r[COL.status]||'').toString().trim();
         // Extrai o número do status — suporta "2", "2 — Texto", texto puro
@@ -611,7 +584,7 @@ async function loadData(){
         }
         const status=stNum||inferSt((r[COL.acoes]||'').toString(),(r[COL.feedback]||'').toString());
         DATA.push({
-          row:i+1+9, // +9 porque o script retorna a partir da linha 10 (pula cabeçalho)
+          row:rowNum, // número real da linha na planilha
           celula:(r[COL.cel]||'SI').toString().trim(),
           matricula:mat.replace(/\s*\(\d{4}\)\s*/,'').trim(),
           ano:am?am[1]:(r[COL.ano]||'').toString().trim(),
@@ -803,43 +776,6 @@ async function saveNew(e){
 function clearForm(){
   ['n-mat','n-ano','n-data','n-local','n-mod','n-acoes','n-rai','n-inicio','n-prazo'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['n-tipo','n-cat','n-uf','n-fase','n-resp','n-prior','n-st','n-cel','n-pend'].forEach(id=>{const el=document.getElementById(id);if(el)el.selectedIndex=0;});
-}
-
-// ─── BUSCA IA ─────────────────────────────────────────────────────────────────
-async function askAI(){
-  const inp=document.getElementById('query-input'),q=inp.value.trim();
-  if(!q)return;if(!CONFIG.claudeKey){toast('Configure a chave Claude','error');return;}
-  addChat('user',q);inp.value='';const t=addChat('ai','',true);
-  const rev=getRev();
-  const ds=DATA.map(d=>{
-    const key=revKey(d);const rf=Object.keys(rev[key]||{}).join(',')||'nenhum';
-    return`[${d.matricula} ${d.ano}] Tipo:${d.tipo||'—'} Cat:${d.cat||'—'} Resp:${d.resp} Status:${STATUS_LABELS[d.status]||d.status} Prior:${d.prior||'—'} Laudo:${d.pend||'—'} Revisores:${rf}/${REVISORES.length} Prazo:${d.prazo||'—'} Local:${d.local||'—'} Modelo:${d.modelo||'—'} Ações:${d.acoes}`;
-  }).join('\n');
-  try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':CONFIG.claudeKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,
-        system:`Você é o assistente da Seção de Investigação do SERIPA-VII (Sétimo Serviço Regional de Investigação e Prevenção de Acidentes Aeronáuticos). Responda em português, objetivo e com linguagem aeronáutica adequada.
-Investigadores: CP AVILA, MAJ PABLO, CP CARLOS EDUARDO, CP JAIRO.
-Revisores: PBO(Maj Pablo), CEO(Cp C.Eduardo), RAV(Cp Ávila), JON, MAT, EMI. Quórum: todos os 6 devem confirmar.
-Status: 1=Aguardando laudo técnico, 2=Confecção da minuta, 3=Em revisão (parcial), 3.5=Revisada (todos confirmaram), 4=Aguard.reunião liberação, 5=Apreciação do chefe, 6=Upload no Dédalo, 7=Minuta autenticada.
-Categorias SIPAER conforme MCA 3-6/2017: CFIT, LOC-I, LOC-G, SCF-PP, SCF-NP, FUEL, BIRD, WILD, LALT, CTOL, ARC, USOS, UIMC, RI, TURB, WSTRW, ICE, F-NI, F-POST, CABIN, EVAC, MAC, GCOL, RAMP, EXTL, ADRM, MED, OTHR.
-Data atual: ${new Date().toLocaleDateString('pt-BR')}.
-Briefing quinzenal: resuma o estado geral, destaque prioridades 1, ocorrências em atraso, minutas em revisão e próximas etapas por investigador.
-
-DADOS ATUAIS:
-${ds||'Nenhum dado. Sincronize primeiro.'}`,
-        messages:[{role:'user',content:q}]})});
-    const data=await res.json();t.classList.remove('typing');
-    t.textContent=data.content?.[0]?.text||('Erro: '+JSON.stringify(data.error));
-  }catch(err){t.classList.remove('typing');t.textContent='Erro: '+err.message;}
-}
-function quickQuery(q){document.getElementById('query-input').value=q;showPanel('busca');askAI();}
-function addChat(role,text,typing=false){
-  const area=document.getElementById('chat-area'),msg=document.createElement('div');msg.className='chat-msg';
-  const av=document.createElement('div');av.className=`chat-avatar ${role==='user'?'avatar-user':'avatar-ai'}`;av.textContent=role==='user'?(USER?.initials||'SI'):'IA';
-  const b=document.createElement('div');b.className=`chat-bubble${role==='user'?' user':''}${typing?' typing':''}`;b.textContent=text;
-  msg.appendChild(av);msg.appendChild(b);area.appendChild(msg);area.scrollTop=area.scrollHeight;return b;
 }
 
 // ─── NAV ──────────────────────────────────────────────────────────────────────
